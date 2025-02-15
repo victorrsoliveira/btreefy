@@ -1,6 +1,6 @@
 BasedOnStyle: Google
 IndentWidth: 4
-ColumnLimit: 90
+ColumnLimit: 80
 Language: Cpp
 AlignConsecutiveAssignments: true
 SpaceAfterCStyleCast: true
@@ -9,7 +9,7 @@ IndentCaseLabels: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AlignAfterOpenBracket: true
-BreakBeforeBraces: Linux
+BreakBeforeBraces: Allman
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: false
