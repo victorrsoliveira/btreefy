@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="Execute_LoRaP2P">
+    <Script code="execute_lorap2p()"/>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Execute_Mode">
+    <Fallback>
+      <Sequence>
+        <ScriptCondition code="supervision_succeeded?"/>
+        <Script code="go_to_sleep()"/>
+      </Sequence>
+      <Sequence>
+        <ScriptCondition code="ble_attempts_exceeded?"/>
+        <SubTree ID="Execute_LoRaP2P"/>
+      </Sequence>
+      <Sequence>
+        <ScriptCondition code="supervision_timedout?"/>
+        <Script code="increment_ble_attemps()"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Monitoring">
+    <Sequence>
+      <AlwaysSuccess name="ResetVariables"/>
+      <Fallback>
+        <Script code="run_ble_comm()"/>
+        <Script code="run_lora_comm()"/>
+      </Fallback>
+      <AlwaysSuccess name="GoToSleep"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Overview">
+    <Sequence>
+      <Fallback>
+        <ScriptCondition code="is_initialized?"/>
+        <Fallback>
+          <RetryUntilSuccessful num_attempts="3">
+            <SubTree ID="Peripherals_Setup"/>
+          </RetryUntilSuccessful>
+          <Script code="init_error_and_reboot()"/>
+        </Fallback>
+      </Fallback>
+      <Fallback>
+        <ScriptCondition code="is_operation_mode_set?"/>
+        <Sequence>
+          <ScriptCondition code="is_setup_time_expired?"/>
+          <ForceFailure>
+            <Script code="go_to_sleep()"/>
+          </ForceFailure>
+        </Sequence>
+      </Fallback>
+      <SubTree ID="Execute_Mode"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Peripherals_Setup">
+    <Sequence>
+      <Script code="setup_ble_mcu()"/>
+      <Script code="setup_lora()"/>
+      <Script code="setup_gps()"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel/>
+
+</root>
