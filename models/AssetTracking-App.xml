@@ -5,20 +5,29 @@
   </BehaviorTree>
 
   <BehaviorTree ID="Execute_Mode">
-    <Fallback>
-      <Sequence>
-        <ScriptCondition code="supervision_succeeded?"/>
-        <Script code="go_to_sleep()"/>
-      </Sequence>
-      <Sequence>
-        <ScriptCondition code="ble_attempts_exceeded?"/>
-        <SubTree ID="Execute_LoRaP2P"/>
-      </Sequence>
-      <Sequence>
-        <ScriptCondition code="supervision_timedout?"/>
-        <Script code="increment_ble_attemps()"/>
-      </Sequence>
-    </Fallback>
+    <Sequence>
+      <Fallback>
+        <Sequence>
+          <ScriptCondition code="is_ble?"/>
+          <Fallback>
+            <ScriptCondition code="supervision_succeeded?"/>
+            <Sequence>
+              <ScriptCondition code="supervision_timedout?"/>
+              <Script code="increment_ble_attemps()"/>
+              <Fallback>
+                <ScriptCondition code="ble_attempts_exceeded?"/>
+                <Script code="set_lorap2p()"/>
+              </Fallback>
+            </Sequence>
+          </Fallback>
+        </Sequence>
+        <Sequence>
+          <ScriptCondition code="is_lorap2p?"/>
+          <SubTree ID="Execute_LoRaP2P"/>
+        </Sequence>
+      </Fallback>
+      <Script code="go_to_sleep()"/>
+    </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="Monitoring">
@@ -35,7 +44,7 @@
   <BehaviorTree ID="Overview">
     <Sequence>
       <Fallback>
-        <ScriptCondition code="is_initialized?"/>
+        <ScriptCondition code="is_initzed?"/>
         <Fallback>
           <RetryUntilSuccessful num_attempts="3">
             <SubTree ID="Peripherals_Setup"/>
@@ -44,13 +53,17 @@
         </Fallback>
       </Fallback>
       <Fallback>
-        <ScriptCondition code="is_operation_mode_set?"/>
+        <ScriptCondition code="is_op_mode_set?"/>
         <Sequence>
-          <ScriptCondition code="is_setup_time_expired?"/>
+          <ScriptCondition code="is_setup_time_exprd?"/>
           <ForceFailure>
             <Script code="go_to_sleep()"/>
           </ForceFailure>
         </Sequence>
+      </Fallback>
+      <Fallback>
+        <ScriptCondition code="exec_timers_cfgd?"/>
+        <Script code="setup_exec_timers()"/>
       </Fallback>
       <SubTree ID="Execute_Mode"/>
     </Sequence>
