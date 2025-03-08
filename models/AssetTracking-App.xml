@@ -1,25 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
-  <BehaviorTree ID="Execute_LoRaP2P">
-    <Script code="execute_lorap2p()"/>
-  </BehaviorTree>
-
-  <BehaviorTree ID="Execute_Mode">
+  <BehaviorTree ID="Device_Operation">
     <Sequence>
       <Fallback>
         <Sequence>
           <ScriptCondition code="is_ble?"/>
-          <Fallback>
-            <ScriptCondition code="supervision_succeeded?"/>
-            <Sequence>
-              <ScriptCondition code="supervision_timedout?"/>
-              <Script code="increment_ble_attemps()"/>
-              <Fallback>
-                <ScriptCondition code="ble_attempts_exceeded?"/>
-                <Script code="set_lorap2p()"/>
-              </Fallback>
-            </Sequence>
-          </Fallback>
+          <SubTree ID="Execute_BLE"/>
         </Sequence>
         <Sequence>
           <ScriptCondition code="is_lorap2p?"/>
@@ -27,6 +13,38 @@
         </Sequence>
       </Fallback>
       <Script code="go_to_sleep()"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Execute_BLE">
+    <Fallback>
+      <ScriptCondition code="supervision_succeeded?"/>
+      <Sequence>
+        <ScriptCondition code="supervision_timedout?"/>
+        <Script code="increment_ble_attemps()"/>
+        <Fallback>
+          <ScriptCondition code="ble_attempts_exceeded?"/>
+          <Script code="set_lorap2p()"/>
+        </Fallback>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Execute_LoRaP2P">
+    <Sequence>
+      <Script code="send_wait_p2p_msg()"/>
+      <Fallback>
+        <Sequence>
+          <ScriptCondition code="p2p_supervision_succeded?"/>
+          <Script code="set_new_mode()"/>
+        </Sequence>
+        <Sequence>
+          <Script code="increment_p2p_attemps()"/>
+          <Fallback>
+            <Script code="p2p_attemps_exceeded?"/>
+          </Fallback>
+        </Sequence>
+      </Fallback>
     </Sequence>
   </BehaviorTree>
 
@@ -56,16 +74,15 @@
         <ScriptCondition code="is_op_mode_set?"/>
         <Sequence>
           <ScriptCondition code="is_setup_time_exprd?"/>
-          <ForceFailure>
-            <Script code="go_to_sleep()"/>
-          </ForceFailure>
+          <Script code="go_to_sleep()"/>
+          <Script code="reboot_after_sleep()"/>
         </Sequence>
       </Fallback>
       <Fallback>
         <ScriptCondition code="exec_timers_cfgd?"/>
         <Script code="setup_exec_timers()"/>
       </Fallback>
-      <SubTree ID="Execute_Mode"/>
+      <SubTree ID="Device_Operation"/>
     </Sequence>
   </BehaviorTree>
 
