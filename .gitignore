@@ -1,1 +1,13 @@
 *.bkp
+
+# CMake files
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+Makefile
+
+# CMake build dir
+build/
+
+# lib files
+*.a
