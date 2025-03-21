@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="Device_Operation">
+    <Sequence>
+      <Fallback>
+        <Sequence>
+          <ScriptCondition code="is_ble?"/>
+          <SubTree ID="Execute_BLE"/>
+        </Sequence>
+        <Sequence>
+          <ScriptCondition code="is_lorap2p?"/>
+          <SubTree ID="Execute_LoRaP2P"/>
+        </Sequence>
+      </Fallback>
+      <Script code="go_to_sleep()"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Execute_BLE">
+    <Fallback>
+      <ScriptCondition code="supervision_succeeded?"/>
+      <Sequence>
+        <ScriptCondition code="supervision_timedout?"/>
+        <Script code="increment_ble_attemps()"/>
+        <Fallback>
+          <ScriptCondition code="ble_attempts_exceeded?"/>
+          <Script code="set_lorap2p()"/>
+        </Fallback>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Execute_LoRaP2P">
+    <Sequence>
+      <Script code="send_wait_p2p_msg()"/>
+      <Fallback>
+        <Sequence>
+          <ScriptCondition code="p2p_supervision_succeded?"/>
+          <Script code="set_new_mode()"/>
+        </Sequence>
+        <Sequence>
+          <Script code="increment_p2p_attemps()"/>
+          <Fallback>
+            <Script code="p2p_attemps_exceeded?"/>
+          </Fallback>
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Monitoring">
+    <Sequence>
+      <AlwaysSuccess name="ResetVariables"/>
+      <Fallback>
+        <Script code="run_ble_comm()"/>
+        <Script code="run_lora_comm()"/>
+      </Fallback>
+      <AlwaysSuccess name="GoToSleep"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Overview">
+    <Sequence>
+      <Fallback>
+        <ScriptCondition code="is_initzed?"/>
+        <Fallback>
+          <RetryUntilSuccessful num_attempts="3">
+            <SubTree ID="Peripherals_Setup"/>
+          </RetryUntilSuccessful>
+          <Script code="init_error_and_reboot()"/>
+        </Fallback>
+      </Fallback>
+      <Fallback>
+        <ScriptCondition code="is_op_mode_set?"/>
+        <Sequence>
+          <ScriptCondition code="is_setup_time_exprd?"/>
+          <Script code="go_to_sleep()"/>
+          <Script code="reboot_after_sleep()"/>
+        </Sequence>
+      </Fallback>
+      <Fallback>
+        <ScriptCondition code="exec_timers_cfgd?"/>
+        <Script code="setup_exec_timers()"/>
+      </Fallback>
+      <SubTree ID="Device_Operation"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Peripherals_Setup">
+    <Sequence>
+      <Script code="setup_ble_mcu()"/>
+      <Script code="setup_lora()"/>
+      <Script code="setup_gps()"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel/>
+
+</root>
