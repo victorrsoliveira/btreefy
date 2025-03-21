@@ -5,10 +5,11 @@
 
 ```shell
 cmake . -B build
+cd build
+make
 ```
 
 ## Run example
-```
-cd build
-make
+```shell
+./bin/BTreeFy-Examples
 ```

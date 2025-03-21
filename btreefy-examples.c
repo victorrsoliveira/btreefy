@@ -77,7 +77,7 @@ int main(void)
 
     if (btf_init(&tree, nodes, sizeof(nodes)) == 0)
     {
-        btf_tree_controller(&tree);
+        btf_tick_tree(&tree);
     }
     return 0;
 }

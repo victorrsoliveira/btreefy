@@ -17,8 +17,8 @@
 #define BTF_ERROR_EINVAL -1
 #define BTF_ERROR_EXEC   -2
 
-int32_t btf_tree_controller(btf_tree_st *tree);
-
 int32_t btf_init(btf_tree_st *tree, struct btf_node *nodes, uint32_t tree_size);
+
+int32_t btf_tick_tree(btf_tree_st *tree);
 
 #endif  // BTREEFY_H
