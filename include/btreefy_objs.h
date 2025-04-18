@@ -52,11 +52,7 @@ struct btf_node
     uint32_t parent;
     uint32_t child;
     uint32_t sibling;
-    btf_node_status_t (*action)(btf_tree_st *tree, void *data, size_t datalen);
-    btf_node_execution_result_t (*control)(btf_tree_st       *tree,
-                                           struct btf_node   *child_node,
-                                           btf_node_status_t *status,
-                                           void *data, size_t datalen);
+    void (*p_fn)(void);
 };
 
 /**
