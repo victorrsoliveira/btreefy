@@ -45,19 +45,24 @@ typedef struct
 {
     struct btf_node *nodes;
     uint32_t         size;
+    uintptr_t        running_node_index;
 } btf_tree_st;
 
 struct btf_node
 {
-    uint32_t parent;
-    uint32_t child;
-    uint32_t sibling;
+    btf_node_status_t status;
+    uint32_t          parent;
+    uint32_t          child;
+    uint32_t          sibling;
     btf_node_status_t (*action)(btf_tree_st *tree, void *data, size_t datalen);
     btf_node_execution_result_t (*control)(btf_tree_st       *tree,
                                            struct btf_node   *child_node,
                                            btf_node_status_t *status,
                                            void *data, size_t datalen);
+    char *name;
 };
+
+extern char *btf_global_action_status_string[];
 
 /**
  * @brief Function prototype definition of an action executed by an Action node

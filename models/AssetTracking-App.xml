@@ -71,18 +71,21 @@
         </Fallback>
       </Fallback>
       <Fallback>
-        <ScriptCondition code="is_op_mode_set?"/>
         <Sequence>
-          <ScriptCondition code="is_setup_time_exprd?"/>
-          <Script code="go_to_sleep()"/>
-          <Script code="reboot_after_sleep()"/>
+          <ScriptCondition code="is_on_setup?"/>
+          <Fallback>
+            <ScriptCondition code="is_setup_timer_running?"/>
+            <Script code="go_to_sleep()"/>
+          </Fallback>
+        </Sequence>
+        <Sequence>
+          <Fallback>
+            <ScriptCondition code="exec_timers_cfgd?"/>
+            <Script code="setup_exec_timers()"/>
+          </Fallback>
+          <SubTree ID="Device_Operation"/>
         </Sequence>
       </Fallback>
-      <Fallback>
-        <ScriptCondition code="exec_timers_cfgd?"/>
-        <Script code="setup_exec_timers()"/>
-      </Fallback>
-      <SubTree ID="Device_Operation"/>
     </Sequence>
   </BehaviorTree>
 
