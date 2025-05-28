@@ -31,8 +31,9 @@ int32_t btf_init(btf_tree_st *tree, struct btf_node *nodes, uint32_t tree_size)
         return BTF_ERROR_EINVAL;
     }
 
-    tree->nodes = nodes;
-    tree->size  = tree_size;
+    tree->nodes              = nodes;
+    tree->size               = tree_size;
+    tree->running_node_index = BTF_NULL_NODE;
 
     printf("BT initialized!\n");
 

@@ -22,6 +22,16 @@ btf_node_execution_result_t btf_sequence_policy_fn(btf_tree_st     *tree,
         return BTF_RETURN_EXECUTION_RESULT;
     }
 
+    // There is a node in RUNNING state
+    if ((tree->running_node_index != BTF_NULL_NODE)
+        && (*status == BTF_FAILURE_STATUS)
+        && (tree->nodes[child_node->parent].status == BTF_RUNNING_STATUS)
+        && (tree->nodes[tree->running_node_index].status == BTF_RUNNING_STATUS))
+    {
+        printf("Must abort RUNNING action [%lu]\n", tree->running_node_index);
+        tree->running_node_index = BTF_NULL_NODE;
+    }
+
     if (BTF_SUCCESS_STATUS == *status)
     {
         return BTF_CONTINUE_EXECUTION_RESULT;
@@ -54,12 +64,14 @@ btf_node_execution_result_t btf_fallback_policy_fn(btf_tree_st     *tree,
         return BTF_RETURN_EXECUTION_RESULT;
     }
 
-
-    if ((tree->nodes[child_node->parent].status == BTF_RUNNING_STATUS)
+    // There is a node in RUNNING state
+    if ((tree->running_node_index != BTF_NULL_NODE)
         && (*status == BTF_SUCCESS_STATUS)
+        && (tree->nodes[child_node->parent].status == BTF_RUNNING_STATUS)
         && (tree->nodes[tree->running_node_index].status == BTF_RUNNING_STATUS))
     {
         printf("Must abort RUNNING action [%lu]\n", tree->running_node_index);
+        tree->running_node_index = BTF_NULL_NODE;
     }
 
     if (BTF_SUCCESS_STATUS == *status)
