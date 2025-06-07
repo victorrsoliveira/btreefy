@@ -7,7 +7,7 @@
  *
  */
 
-#include "btreefy.h"
+#include "btreefy/btreefy.h"
 
 #include <stdio.h>
 

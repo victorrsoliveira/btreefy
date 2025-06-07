@@ -10,7 +10,7 @@
 #ifndef BTREEFY_POLICIES_H
 #define BTREEFY_POLICIES_H
 
-#include "btreefy_objs.h"
+#include "btreefy/btreefy_objs.h"
 
 btf_node_execution_result_t btf_sequence_policy_fn(btf_tree_st     *tree,
                                                    struct btf_node *child_node,

@@ -10,8 +10,8 @@
 #ifndef BTREEFY_H
 #define BTREEFY_H
 
-#include "btreefy_objs.h"
-#include "btreefy_policies.h"
+#include "btreefy/btreefy_objs.h"
+#include "btreefy/btreefy_policies.h"
 
 #define BTF_ERROR_OK     0U
 #define BTF_ERROR_EINVAL -1
