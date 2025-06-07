@@ -1,10 +1,10 @@
-# BTreeFy top-level build script
+# PC example
 
 # Set mininum CMake version required
 cmake_minimum_required(VERSION 3.10)
 
 # Define project
-project(BTreeFy VERSION 0.1.0 LANGUAGES C)
+project(PCExample VERSION 0.1.0 LANGUAGES C)
 
 # General settings (language, output dir)
 set(CMAKE_C_STANDARD 11)
@@ -15,10 +15,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Add the source directory. This should call cmake script inside this directory.
-add_subdirectory(src)
+add_subdirectory(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_BINARY_DIR}/btreefy_lib_bin_dir
+)
 
-# add_executable(BTreeFy-Examples btreefy-examples.c)
+add_executable(BTreeFy-PCExample btreefy-examples.c)
 
-# target_link_libraries(BTreeFy-Examples PUBLIC BTreeFy-Src)
+target_link_libraries(BTreeFy-PCExample PRIVATE BTreeFy-Src)
 
 # target_include_directories(BTreeFy-Examples PUBLIC "./include")

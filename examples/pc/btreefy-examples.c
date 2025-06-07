@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "btreefy.h"
+#include "btreefy/btreefy.h"
 
 btf_node_status_t mock_run_ble_action_status         = BTF_SUCCESS_STATUS;
 btf_node_status_t mock_run_lora_action_status        = BTF_RUNNING_STATUS;

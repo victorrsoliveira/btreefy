@@ -7,7 +7,7 @@
  *
  */
 
-#include "btreefy_policies.h"
+#include "btreefy/btreefy_policies.h"
 
 #include <stdio.h>
 
