@@ -10,7 +10,7 @@
 #include <zephyr/kernel.h>
 
 #include "btreefy/btreefy.h"
-#include "door_sensor.h"
+#include "door_operator_controller.h"
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS 1000
@@ -40,8 +40,14 @@ static btf_node_status_t mock_open_door_action_status  = BTF_SUCCESS_STATUS;
 static btf_node_status_t mock_close_door_action_status = BTF_SUCCESS_STATUS;
 static btf_node_status_t mock_stop_door_action_status  = BTF_SUCCESS_STATUS;
 
-static bool button_pressed_flag    = false;
-static bool has_emergency_occurred = false;
+static bool    button_pressed_flag     = false;
+static bool    open_door_request_flag  = false;
+static bool    close_door_request_flag = false;
+static bool    has_emergency_occurred  = false;
+static uint8_t button_pressed_count    = 0;
+
+static struct k_timer button_timer;
+static void           button_timer_cb(struct k_timer *timer_id);
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb,
                     uint32_t pins)
@@ -50,12 +56,45 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb,
 
     int64_t current_time = k_uptime_get();
 
-    if (current_time - last_button_pressed_evt_time > 10000)
+    if (current_time - last_button_pressed_evt_time > 50)
     {
-        printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+        // printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
         last_button_pressed_evt_time = current_time;
-        button_pressed_flag          = true;
+        if (button_pressed_count == 0)
+        {
+            k_timer_start(&button_timer, K_MSEC(800), K_NO_WAIT);
+        }
+        button_pressed_count++;
     }
+}
+
+void button_timer_cb(struct k_timer *timer_id)
+{
+    switch (button_pressed_count)
+    {
+    case 1:
+    {
+        button_pressed_flag = true;
+    }
+    break;
+
+    case 2:
+    {
+        open_door_request_flag = true;
+    }
+    break;
+
+    case 3:
+    {
+        close_door_request_flag = true;
+    }
+    break;
+
+    default:
+        break;
+    }
+
+    button_pressed_count = 0;
 }
 
 // ### BT ACTIONS - START ###
@@ -71,7 +110,7 @@ btf_node_status_t open_door_action(btf_tree_st *tree, void *data,
                                    size_t datalen)
 {
     printf("Door is opening... ");
-    bt_app_door_sensor_set_status(DOOR_IS_OPENING);
+    door_operator_ctrl_set_action(OPEN_DOOR);
     return BTF_SUCCESS_STATUS;
 }
 
@@ -79,13 +118,14 @@ btf_node_status_t close_door_action(btf_tree_st *tree, void *data,
                                     size_t datalen)
 {
     printf("Door is closing... ");
-    bt_app_door_sensor_set_status(DOOR_IS_CLOSING);
+    door_operator_ctrl_set_action(CLOSE_DOOR);
     return mock_close_door_action_status;
 }
 
 btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
                                    size_t datalen)
 {
+    printf("Emergency occurred!\n");
     has_emergency_occurred = true;
     return BTF_SUCCESS_STATUS;
 }
@@ -99,8 +139,10 @@ btf_node_status_t is_emerg_btn_pressed_cond(btf_tree_st *tree, void *data,
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
+
     if (button_pressed_flag)
     {
+        printf("Emergency button pressed!\n");
         button_pressed_flag = false;
         ret                 = BTF_SUCCESS_STATUS;
     }
@@ -111,7 +153,7 @@ btf_node_status_t is_open_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (bt_app_door_sensor_get_status() == DOOR_IS_OPEN)
+    if (door_operator_ctrl_get_status() == DOOR_IS_OPEN)
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -123,7 +165,7 @@ btf_node_status_t is_opening_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (bt_app_door_sensor_get_status() == DOOR_IS_OPENING)
+    if (door_operator_ctrl_get_status() == DOOR_IS_OPENING)
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -135,7 +177,7 @@ btf_node_status_t is_closed_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (bt_app_door_sensor_get_status() == DOOR_IS_CLOSED)
+    if (door_operator_ctrl_get_status() == DOOR_IS_CLOSED)
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -147,7 +189,7 @@ btf_node_status_t is_closing_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (bt_app_door_sensor_get_status() == DOOR_IS_CLOSING)
+    if (door_operator_ctrl_get_status() == DOOR_IS_CLOSING)
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -172,13 +214,32 @@ btf_node_status_t has_emergency_ocurred_cond(btf_tree_st *tree, void *data,
 btf_node_status_t open_door_request_cond(btf_tree_st *tree, void *data,
                                          size_t datalen)
 {
-    return BTF_FAILURE_STATUS;
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+
+    if (open_door_request_flag)
+    {
+        printf("Open door request!\n");
+        open_door_request_flag = false;
+        ret                    = BTF_SUCCESS_STATUS;
+    }
+
+    return ret;
 }
 
 btf_node_status_t close_door_request_cond(btf_tree_st *tree, void *data,
                                           size_t datalen)
 {
-    return BTF_FAILURE_STATUS;
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if (close_door_request_flag)
+    {
+        printf("Close door request!\n");
+        close_door_request_flag = false;
+        ret                     = BTF_SUCCESS_STATUS;
+    }
+
+    return ret;
 }
 
 // ### BT CONDITIONS - END ###
@@ -224,7 +285,7 @@ struct btf_node nodes[21] = {
     [5]  = {.status  = BTF_UNDEF_STATUS,
             .parent  = 0,
             .child   = 6,
-            .sibling = 16,
+            .sibling = BTF_NULL_NODE,
             .action  = NULL,
             .control = btf_sequence_policy_fn,
             .name    = "Sequence_2"},
@@ -259,7 +320,7 @@ struct btf_node nodes[21] = {
     [10] = {.status  = BTF_UNDEF_STATUS,
             .parent  = 0,
             .child   = 11,
-            .sibling = 5,
+            .sibling = 16,
             .action  = NULL,
             .control = btf_sequence_policy_fn,
             .name    = "Sequence_3"},
@@ -301,7 +362,7 @@ struct btf_node nodes[21] = {
     [16] = {.status  = BTF_UNDEF_STATUS,
             .parent  = 0,
             .child   = 17,
-            .sibling = BTF_NULL_NODE,
+            .sibling = 5,
             .action  = NULL,
             .control = btf_sequence_policy_fn,
             .name    = "Sequence_4"},
@@ -360,6 +421,8 @@ int main(void)
         return 0;
     }
 
+    k_timer_init(&button_timer, button_timer_cb, NULL);
+
     ret = gpio_pin_configure_dt(&button, GPIO_INPUT);
     if (ret != 0)
     {
@@ -380,7 +443,7 @@ int main(void)
     gpio_add_callback(button.port, &button_cb_data);
     printk("Set up button at %s pin %d\n", button.port->name, button.pin);
 
-    if (bt_app_door_sensor_init())
+    if (door_operator_ctrl_init())
     {
         return 0;
     }
@@ -391,9 +454,8 @@ int main(void)
 
     while (1)
     {
-        printf("Door state: %s\n", bt_app_door_sensor_get_status_string(
-                                       bt_app_door_sensor_get_status()));
-
+        printf("Door state: %s\n", door_operator_ctrl_get_status_string(
+                                       door_operator_ctrl_get_status()));
         status = btf_tick_tree(&tree);
         printf("Tree executed and returned %s\n",
                btf_global_action_status_string[status]);

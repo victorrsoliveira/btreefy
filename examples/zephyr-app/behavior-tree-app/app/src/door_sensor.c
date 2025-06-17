@@ -55,7 +55,7 @@ int bt_app_door_sensor_set_status(enum door_sensor_status status)
         if (status == DOOR_IS_CLOSING)
         {
             door_sensor_status = status;
-            k_timer_start(&door_sensor_timer, K_MSEC(1500), K_NO_WAIT);
+            k_timer_start(&door_sensor_timer, K_MSEC(4000), K_NO_WAIT);
         }
     }
     break;
@@ -65,7 +65,7 @@ int bt_app_door_sensor_set_status(enum door_sensor_status status)
         if (status == DOOR_IS_OPENING)
         {
             door_sensor_status = status;
-            k_timer_start(&door_sensor_timer, K_MSEC(1500), K_NO_WAIT);
+            k_timer_start(&door_sensor_timer, K_MSEC(4000), K_NO_WAIT);
         }
     }
     break;
