@@ -17,17 +17,17 @@
       </Sequence>
       <Sequence>
         <Fallback>
-          <ScriptCondition code="Aberta?"/>
-          <ScriptCondition code="Fechada?"/>
-        </Fallback>
-        <Script code="Motor(0)"/>
-      </Sequence>
-      <Sequence>
-        <Fallback>
           <ScriptCondition code="Fechar?"/>
           <ScriptCondition code="Fechando?"/>
         </Fallback>
         <Script code="Motor(1)"/>
+      </Sequence>
+      <Sequence>
+        <Fallback>
+          <ScriptCondition code="Aberta?"/>
+          <ScriptCondition code="Fechada?"/>
+        </Fallback>
+        <Script code="Motor(0)"/>
       </Sequence>
     </Fallback>
   </BehaviorTree>
