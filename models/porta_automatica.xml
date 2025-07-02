@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
+  <BehaviorTree ID="CondicoesAbrir?">
+    <Fallback>
+      <ScriptCondition code="Emergencia?"/>
+      <ScriptCondition code="Abrindo?"/>
+      <Sequence>
+        <ScriptCondition code="Fechada?"/>
+        <ScriptCondition code="Abrir?"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="CondicoesFechar?">
+    <Fallback>
+      <ScriptCondition code="Fechar?"/>
+      <ScriptCondition code="Fechando?"/>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="CondicoesParar?">
+    <Fallback>
+      <ScriptCondition code="Aberta?"/>
+      <ScriptCondition code="Fechada?"/>
+    </Fallback>
+  </BehaviorTree>
+
   <BehaviorTree ID="main">
     <Fallback>
       <Sequence>
@@ -8,25 +33,15 @@
         <Script code="Emergencia()"/>
       </Sequence>
       <Sequence>
-        <Fallback>
-          <ScriptCondition code="Emergencia?"/>
-          <ScriptCondition code="Abrir?"/>
-          <ScriptCondition code="Abrindo?"/>
-        </Fallback>
+        <SubTree ID="CondicoesAbrir?"/>
         <Script code="Motor(-1)"/>
       </Sequence>
       <Sequence>
-        <Fallback>
-          <ScriptCondition code="Fechar?"/>
-          <ScriptCondition code="Fechando?"/>
-        </Fallback>
+        <SubTree ID="CondicoesFechar?"/>
         <Script code="Motor(1)"/>
       </Sequence>
       <Sequence>
-        <Fallback>
-          <ScriptCondition code="Aberta?"/>
-          <ScriptCondition code="Fechada?"/>
-        </Fallback>
+        <SubTree ID="CondicoesParar?"/>
         <Script code="Motor(0)"/>
       </Sequence>
     </Fallback>
