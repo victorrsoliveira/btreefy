@@ -103,6 +103,8 @@ btf_node_status_t stop_door_action(btf_tree_st *tree, void *data,
                                    size_t datalen)
 {
     printf("Door has stopped.\n");
+    door_operator_ctrl_set_action(STOP_DOOR);
+
     return BTF_SUCCESS_STATUS;
 }
 
@@ -110,7 +112,16 @@ btf_node_status_t open_door_action(btf_tree_st *tree, void *data,
                                    size_t datalen)
 {
     printf("Door is opening... ");
-    door_operator_ctrl_set_action(OPEN_DOOR);
+    if (door_operator_ctrl_get_sensor_status() != DOOR_IS_OPEN)
+    {
+        printf(" request ACCEPTED!\n");
+        door_operator_ctrl_set_action(OPEN_DOOR);
+    }
+    else
+    {
+        printf(" but is alreaedy OPEN, then REJECTED!\n");
+    }
+
     return BTF_SUCCESS_STATUS;
 }
 
@@ -153,7 +164,7 @@ btf_node_status_t is_open_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (door_operator_ctrl_get_status() == DOOR_IS_OPEN)
+    if (door_operator_ctrl_get_sensor_status() == DOOR_IS_OPEN)
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -165,7 +176,8 @@ btf_node_status_t is_opening_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (door_operator_ctrl_get_status() == DOOR_IS_OPENING)
+    if ((door_operator_ctrl_get_sensor_status() == DOOR_IS_UNDEFINED)
+        && (door_operator_ctrl_get_opener_action() == OPEN_DOOR))
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -177,7 +189,7 @@ btf_node_status_t is_closed_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (door_operator_ctrl_get_status() == DOOR_IS_CLOSED)
+    if (door_operator_ctrl_get_sensor_status() == DOOR_IS_CLOSED)
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -189,7 +201,8 @@ btf_node_status_t is_closing_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    if (door_operator_ctrl_get_status() == DOOR_IS_CLOSING)
+    if ((door_operator_ctrl_get_sensor_status() == DOOR_IS_UNDEFINED)
+        && (door_operator_ctrl_get_opener_action() == CLOSE_DOOR))
     {
         ret = BTF_SUCCESS_STATUS;
     }
@@ -336,7 +349,7 @@ struct btf_node nodes[21] = {
             .child   = BTF_NULL_NODE,
             .sibling = 13,
             .action  = has_emergency_ocurred_cond,
-            .control = btf_sequence_policy_fn,
+            .control = NULL,
             .name    = "Emerg occr'd?"},
     [13] = {.status  = BTF_UNDEF_STATUS,
             .parent  = 11,
@@ -454,8 +467,8 @@ int main(void)
 
     while (1)
     {
-        printf("Door state: %s\n", door_operator_ctrl_get_status_string(
-                                       door_operator_ctrl_get_status()));
+        printf("Door state: %s\n", door_operator_ctrl_get_sensor_status_string(
+                                       door_operator_ctrl_get_sensor_status()));
         status = btf_tick_tree(&tree);
         printf("Tree executed and returned %s\n",
                btf_global_action_status_string[status]);

@@ -17,18 +17,21 @@ enum door_action
     CLOSE_DOOR = 1
 };
 
-enum door_sensor_status {
+enum door_sensor_status
+{
+    DOOR_IS_UNDEFINED,
     DOOR_IS_OPEN,
-    DOOR_IS_CLOSED,
-    DOOR_IS_OPENING,
-    DOOR_IS_CLOSING
+    DOOR_IS_CLOSED
 };
 
 int door_operator_ctrl_init(void);
 
-enum door_sensor_status door_operator_ctrl_get_status(void);
+enum door_sensor_status door_operator_ctrl_get_sensor_status(void);
 
-char * door_operator_ctrl_get_status_string(enum door_sensor_status status);
+enum door_action door_operator_ctrl_get_opener_action(void);
+
+char* door_operator_ctrl_get_sensor_status_string(
+    enum door_sensor_status status);
 
 int door_operator_ctrl_set_action(enum door_action action);
 
