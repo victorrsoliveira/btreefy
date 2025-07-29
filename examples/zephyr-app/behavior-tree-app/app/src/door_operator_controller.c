@@ -11,11 +11,9 @@
 
 #include <zephyr/kernel.h>
 
-static char *door_sensor_status_string[] = {
-    [DOOR_IS_UNDEFINED] = "UNDEFINED",
-    [DOOR_IS_OPEN]    = "OPEN",
-    [DOOR_IS_CLOSED]  = "CLOSED"
-};
+static char *door_sensor_status_string[] = {[DOOR_IS_UNDEFINED] = "UNDEFINED",
+                                            [DOOR_IS_OPEN]      = "OPEN",
+                                            [DOOR_IS_CLOSED]    = "CLOSED"};
 
 static struct
 {
@@ -28,7 +26,7 @@ static void    door_sensor_timer_cb(struct k_timer *timer_id);
 
 int door_operator_ctrl_init(void)
 {
-    door_ctrl.opener_action  = STOP_DOOR;
+    door_ctrl.opener_action = STOP_DOOR;
     door_ctrl.sensor_status = DOOR_IS_CLOSED;
 
     k_timer_init(&door_sensor_timer, door_sensor_timer_cb, NULL);
@@ -45,7 +43,8 @@ enum door_action door_operator_ctrl_get_opener_action(void)
     return door_ctrl.opener_action;
 }
 
-char *door_operator_ctrl_get_sensor_status_string(enum door_sensor_status status)
+char *door_operator_ctrl_get_sensor_status_string(
+    enum door_sensor_status status)
 {
     return door_sensor_status_string[status];
 }

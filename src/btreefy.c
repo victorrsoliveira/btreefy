@@ -68,11 +68,11 @@ int32_t btf_tick_tree(btf_tree_st *tree)
             {
                 status         = p_node->action(tree, NULL, 0);
                 p_node->status = status;
-                #if BTF_DEBUG_PRINTF_ENABLED
+#if BTF_DEBUG_PRINTF_ENABLED
                 printf("Action %s [%d] executed, status = %s\n", p_node->name,
                        BTF_NODE_ARRAY_INDEX(tree->nodes, p_node),
                        btf_global_action_status_string[status]);
-                #endif
+#endif
             }
             else
             {
@@ -95,12 +95,12 @@ int32_t btf_tick_tree(btf_tree_st *tree)
         {
             // Check node status with policy function from parent node
             exec_res = p_parent->control(tree, p_node, &status, NULL, 0);
-            #if BTF_DEBUG_PRINTF_ENABLED
+#if BTF_DEBUG_PRINTF_ENABLED
             printf("Policy %s [%d] executed, result = %s, ret. status = %s\n",
                    p_parent->name, BTF_NODE_ARRAY_INDEX(tree->nodes, p_parent),
                    btf_global_control_status_string[exec_res],
                    btf_global_action_status_string[status]);
-            #endif
+#endif
 
             if (BTF_CONTINUE_EXECUTION_RESULT == exec_res)
             {
@@ -141,5 +141,17 @@ int32_t btf_tree_controller(btf_tree_st *tree)
         return BTF_ERROR_EINVAL;
     }
 
+    return 0;
+}
+
+int32_t btf_blackboard_update_data(int16_t index, void *data, size_t size)
+{
+    // TODO: Validate parameters. index must be in range of defined values, data non-null and size non-zero
+    return 0;
+}
+
+int32_t btf_blackboard_retrieve_data(int16_t index, void *data, size_t size)
+{
+    // TODO: Validate parameters. index must be in range of defined values, data non-null and size non-zero
     return 0;
 }
