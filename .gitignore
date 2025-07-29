@@ -9,5 +9,11 @@ Makefile
 # CMake build dir
 build/
 
+# clangd
+.cache
+
 # lib files
 *.a
+
+# Zephyr files
+.west
