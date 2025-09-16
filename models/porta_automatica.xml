@@ -53,7 +53,7 @@
         <ScriptCondition code="Bt_Emerg?"/>
         <Script code="Motor(0)"/>
         <Script code="Emergencia()"/>
-        <Script code="Motor(-1)"/>
+        <Script code="Abrir()"/>
       </Sequence>
       <Sequence>
         <ScriptCondition code="Motor?"/>
