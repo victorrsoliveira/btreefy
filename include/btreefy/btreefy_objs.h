@@ -72,7 +72,7 @@ struct btf_blackboard_data
 {
     void  *data;
     size_t size;
-    # ifdef 0
+    #if 0
     bool (*validator)(void *data, size_t size);
     #endif
     bool checked;
