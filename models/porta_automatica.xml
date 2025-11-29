@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="CondicoesAbrir?">
+    <Fallback>
+      <ScriptCondition code="Emergencia?"/>
+      <ScriptCondition code="Abrindo?"/>
+      <Sequence>
+        <ScriptCondition code="Fechada?"/>
+        <ScriptCondition code="Abrir?"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="CondicoesFechar?">
+    <Fallback>
+      <ScriptCondition code="Fechar?"/>
+      <ScriptCondition code="Fechando?"/>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="CondicoesParar?">
+    <Fallback>
+      <ScriptCondition code="Aberta?"/>
+      <ScriptCondition code="Fechada?"/>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="main">
+    <Fallback>
+      <Sequence>
+        <ScriptCondition code="Bt_Emerg?"/>
+        <Script code="Motor(0)"/>
+        <Script code="Emergencia()"/>
+      </Sequence>
+      <Sequence>
+        <SubTree ID="CondicoesAbrir?"/>
+        <Script code="Motor(-1)"/>
+      </Sequence>
+      <Sequence>
+        <SubTree ID="CondicoesFechar?"/>
+        <Script code="Motor(1)"/>
+      </Sequence>
+      <Sequence>
+        <SubTree ID="CondicoesParar?"/>
+        <Script code="Motor(0)"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="main_new">
+    <Fallback>
+      <Sequence>
+        <ScriptCondition code="Bt_Emerg?"/>
+        <Script code="Motor(0)"/>
+        <Script code="Emergencia()"/>
+        <Script code="Abrir()"/>
+      </Sequence>
+      <Sequence>
+        <ScriptCondition code="Motor?"/>
+        <Fallback>
+          <ScriptCondition code="Aberta?"/>
+          <ScriptCondition code="Fechada?"/>
+        </Fallback>
+        <Script code="Motor(0)"/>
+      </Sequence>
+      <Sequence>
+        <ScriptCondition code="Abrir?"/>
+        <ScriptCondition code="Fechada?"/>
+        <Script code="Motor(-1)"/>
+      </Sequence>
+      <Sequence>
+        <ScriptCondition code="Fechar?"/>
+        <ScriptCondition code="Aberta?"/>
+        <Script code="Motor(1)"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel/>
+
+</root>

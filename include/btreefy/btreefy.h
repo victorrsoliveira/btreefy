@@ -13,6 +13,8 @@
 #include "btreefy/btreefy_objs.h"
 #include "btreefy/btreefy_policies.h"
 
+#define BTF_DEBUG_PRINTF_ENABLED 0
+
 #define BTF_ERROR_OK     0U
 #define BTF_ERROR_EINVAL -1
 #define BTF_ERROR_EXEC   -2
@@ -26,5 +28,9 @@ int32_t btf_init(btf_tree_st *tree, struct btf_node *nodes, uint32_t tree_size);
 int32_t btf_tick_tree(btf_tree_st *tree);
 
 int32_t btf_tree_controller(btf_tree_st *tree);
+
+int32_t btf_blackboard_update_data(int16_t index, void *data, size_t size);
+
+int32_t btf_blackboard_retrieve_data(int16_t index, void *data, size_t size);
 
 #endif  // BTREEFY_H

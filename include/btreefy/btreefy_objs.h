@@ -10,6 +10,7 @@
 #ifndef BTREEFY_OBJS_H
 #define BTREEFY_OBJS_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -60,6 +61,28 @@ struct btf_node
                                            btf_node_status_t *status,
                                            void *data, size_t datalen);
     char *name;
+};
+
+// WARNING: Read/Write to checked and n_unchecked_entries MUST be in
+// CRITICAL_SECTION
+
+#define BTF_BLKBRD_DATA()
+
+struct btf_blackboard_data
+{
+    void  *data;
+    size_t size;
+    # ifdef 0
+    bool (*validator)(void *data, size_t size);
+    #endif
+    bool checked;
+};
+
+struct btf_blackboard
+{
+    struct btf_blackboard_data *table;
+    size_t                      n_entries;
+    size_t                      n_unchecked_entries;
 };
 
 extern char *btf_global_action_status_string[];
