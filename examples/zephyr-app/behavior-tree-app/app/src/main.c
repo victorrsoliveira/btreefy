@@ -26,6 +26,9 @@
 #error "Unsupported board: sw0 devicetree alias is not defined"
 #endif
 
+extern struct btf_node nodes[];
+extern size_t nodes_size;
+
 /*
  * A build error on this line means your board is unsupported.
  * See the sample documentation for information on how to fix this.
@@ -145,6 +148,11 @@ btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
 
 // ### BT CONDITIONS - START ###
 
+btf_node_status_t is_motor_on_cond(btf_tree_st *tree, void *data, size_t datalen)
+{
+    return BTF_SUCCESS_STATUS;
+}
+
 btf_node_status_t is_emerg_btn_pressed_cond(btf_tree_st *tree, void *data,
                                             size_t datalen)
 {
@@ -258,157 +266,6 @@ btf_node_status_t close_door_request_cond(btf_tree_st *tree, void *data,
 // ### BT CONDITIONS - END ###
 
 
-struct btf_node nodes[21] = {
-
-    [0]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = BTF_NULL_NODE,
-            .child   = 1,
-            .sibling = BTF_NULL_NODE,
-            .action  = NULL,
-            .control = btf_fallback_policy_fn,
-            .name    = "Fallback 1"},
-    [1]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 0,
-            .child   = 2,
-            .sibling = 10,
-            .action  = NULL,
-            .control = btf_sequence_policy_fn,
-            .name    = "Sequence_1"},
-    [2]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 1,
-            .child   = BTF_NULL_NODE,
-            .sibling = 3,
-            .action  = is_emerg_btn_pressed_cond,
-            .control = NULL,
-            .name    = "Emerg Btn?"},
-    [3]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 1,
-            .child   = BTF_NULL_NODE,
-            .sibling = 4,
-            .action  = stop_door_action,
-            .control = NULL,
-            .name    = "Stop door"},
-    [4]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 1,
-            .child   = BTF_NULL_NODE,
-            .sibling = BTF_NULL_NODE,
-            .action  = emergency_action,
-            .control = NULL,
-            .name    = "Emergency"},
-    [5]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 0,
-            .child   = 6,
-            .sibling = BTF_NULL_NODE,
-            .action  = NULL,
-            .control = btf_sequence_policy_fn,
-            .name    = "Sequence_2"},
-    [6]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 5,
-            .child   = 7,
-            .sibling = 9,
-            .action  = NULL,
-            .control = btf_fallback_policy_fn,
-            .name    = "Fallback_7"},
-    [7]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 6,
-            .child   = BTF_NULL_NODE,
-            .sibling = 8,
-            .action  = is_open_cond,
-            .control = NULL,
-            .name    = "Is open?"},
-    [8]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 6,
-            .child   = BTF_NULL_NODE,
-            .sibling = BTF_NULL_NODE,
-            .action  = is_closed_cond,
-            .control = NULL,
-            .name    = "Is closed?"},
-    [9]  = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 5,
-            .child   = BTF_NULL_NODE,
-            .sibling = BTF_NULL_NODE,
-            .action  = stop_door_action,
-            .control = NULL,
-            .name    = "Stop door"},
-    [10] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 0,
-            .child   = 11,
-            .sibling = 16,
-            .action  = NULL,
-            .control = btf_sequence_policy_fn,
-            .name    = "Sequence_3"},
-    [11] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 10,
-            .child   = 12,
-            .sibling = 15,
-            .action  = NULL,
-            .control = btf_fallback_policy_fn,
-            .name    = "Fallback_3"},
-    [12] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 11,
-            .child   = BTF_NULL_NODE,
-            .sibling = 13,
-            .action  = has_emergency_ocurred_cond,
-            .control = NULL,
-            .name    = "Emerg occr'd?"},
-    [13] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 11,
-            .child   = BTF_NULL_NODE,
-            .sibling = 14,
-            .action  = open_door_request_cond,
-            .control = NULL,
-            .name    = "Open door?"},
-    [14] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 11,
-            .child   = BTF_NULL_NODE,
-            .sibling = BTF_NULL_NODE,
-            .action  = is_opening_cond,
-            .control = NULL,
-            .name    = "Is opening?"},
-    [15] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 10,
-            .child   = BTF_NULL_NODE,
-            .sibling = BTF_NULL_NODE,
-            .action  = open_door_action,
-            .control = NULL,
-            .name    = "Open door"},
-    [16] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 0,
-            .child   = 17,
-            .sibling = 5,
-            .action  = NULL,
-            .control = btf_sequence_policy_fn,
-            .name    = "Sequence_4"},
-    [17] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 16,
-            .child   = 18,
-            .sibling = 20,
-            .action  = NULL,
-            .control = btf_fallback_policy_fn,
-            .name    = "Fallback_4"},
-    [18] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 17,
-            .child   = BTF_NULL_NODE,
-            .sibling = 19,
-            .action  = close_door_request_cond,
-            .control = NULL,
-            .name    = "Close door?"},
-    [19] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 17,
-            .child   = BTF_NULL_NODE,
-            .sibling = BTF_NULL_NODE,
-            .action  = is_closing_cond,
-            .control = NULL,
-            .name    = "Is closing?"},
-    [20] = {.status  = BTF_UNDEF_STATUS,
-            .parent  = 16,
-            .child   = BTF_NULL_NODE,
-            .sibling = BTF_NULL_NODE,
-            .action  = close_door_action,
-            .control = NULL,
-            .name    = "Close door"},
-};
-
 int main(void)
 {
     int  ret;
@@ -461,7 +318,7 @@ int main(void)
         return 0;
     }
 
-    if (btf_init(&tree, nodes, sizeof(nodes)) == 0)
+    if (btf_init(&tree, nodes, nodes_size) == 0)
     {
     }
 

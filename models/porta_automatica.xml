@@ -50,28 +50,42 @@
   <BehaviorTree ID="main_new">
     <Fallback>
       <Sequence>
-        <ScriptCondition code="Bt_Emerg?"/>
-        <Script code="Motor(0)"/>
-        <Script code="Emergencia()"/>
-        <Script code="Abrir()"/>
+        <ScriptCondition name="IsEmergBtnPressed"
+                         code="is_emerg_btn_pressed_cond"/>
+        <Script name="StopMotor"
+                code="stop_door_action"/>
+        <Script name="Emergency"
+                code="emergency_action"/>
+        <Script name="OpenDoor"
+                code="open_door_action"/>
       </Sequence>
       <Sequence>
-        <ScriptCondition code="Motor?"/>
+        <ScriptCondition name="IsMotorOn"
+                         code="is_motor_on_cond"/>
         <Fallback>
-          <ScriptCondition code="Aberta?"/>
-          <ScriptCondition code="Fechada?"/>
+          <ScriptCondition name="IsDoorOpen"
+                           code="is_open_cond"/>
+          <ScriptCondition name="IsDoorClosed"
+                           code="is_closed_cond"/>
         </Fallback>
-        <Script code="Motor(0)"/>
+        <Script name="StopMotor"
+                code="stop_door_action"/>
       </Sequence>
       <Sequence>
-        <ScriptCondition code="Abrir?"/>
-        <ScriptCondition code="Fechada?"/>
-        <Script code="Motor(-1)"/>
+        <ScriptCondition name="IsOpenRequest"
+                         code="open_door_request_cond"/>
+        <ScriptCondition name="IsDoorClosed"
+                         code="is_closed_cond"/>
+        <Script name="OpenDoor"
+                code="open_door_action"/>
       </Sequence>
       <Sequence>
-        <ScriptCondition code="Fechar?"/>
-        <ScriptCondition code="Aberta?"/>
-        <Script code="Motor(1)"/>
+        <ScriptCondition name="IsCloseRequest"
+                         code="close_door_request_cond"/>
+        <ScriptCondition name="IsDoorOpen"
+                         code="is_open_cond"/>
+        <Script name="CloseDoor"
+                code="close_door_action"/>
       </Sequence>
     </Fallback>
   </BehaviorTree>
