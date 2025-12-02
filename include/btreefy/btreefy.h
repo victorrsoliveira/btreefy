@@ -13,7 +13,7 @@
 #include "btreefy/btreefy_objs.h"
 #include "btreefy/btreefy_policies.h"
 
-#define BTF_DEBUG_PRINTF_ENABLED 0
+#define BTF_DEBUG_PRINTF_ENABLED 1
 
 #define BTF_ERROR_OK     0U
 #define BTF_ERROR_EINVAL -1

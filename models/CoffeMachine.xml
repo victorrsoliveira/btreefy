@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="main">
+    <Fallback>
+      <ScriptCondition code="is_idle?"/>
+      <Sequence>
+        <ScriptCondition code="is_temp_safe?"/>
+        <Fallback>
+          <ScriptCondition code="is_temp_ok?"/>
+          <Script code="heat()"/>
+        </Fallback>
+        <Fallback>
+          <ScriptCondition code="is_brew_disp_done?"/>
+          <Script code="brewing_dispensing()"/>
+        </Fallback>
+        <Script code="cleaning()"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="main_new">
+    <Fallback>
+      <Sequence>
+        <ScriptCondition name="OverheatCondition"
+                         code="is_overheat_condition"/>
+        <Script name="OverheatHandler"
+                code="overheat_handler"/>
+      </Sequence>
+      <Sequence>
+        <ScriptCondition name="WaterLevelCondition"
+                         code="is_water_level_low_condition"/>
+        <Script name="WaterLevelHandler"
+                code="water_reservoir_is_low"/>
+      </Sequence>
+      <Sequence>
+        <Fallback>
+          <ScriptCondition name="IdleCondition"
+                           code="is_idle_condition"/>
+          <Sequence>
+            <Fallback>
+              <ScriptCondition name="SelfTestCondition"
+                               code="is_self_test_success_condition"/>
+              <Script name="SelfTest"
+                      code="run_self_test"/>
+            </Fallback>
+            <Fallback>
+              <ScriptCondition name="HeatingDoneCondition"
+                               code="is_heating_done_condition"/>
+              <Script name="Heating"
+                      code="run_heating"/>
+            </Fallback>
+            <Fallback>
+              <ScriptCondition name="RinsingDoneCondition"
+                               code="is_rinsing_done_condition"/>
+              <Script name="Rinsing"
+                      code="run_rinsing"/>
+            </Fallback>
+            <Script name="SetIdle"
+                    code="set_idle_state"/>
+          </Sequence>
+        </Fallback>
+        <Script name="WaitCoffeeRequest"
+                code="wait_coffee_request"/>
+        <Script name="PrepareCoffee"
+                code="prepare_coffee"/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel/>
+
+</root>
