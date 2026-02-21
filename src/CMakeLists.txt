@@ -1,7 +1,7 @@
 
 if(ZEPHYR_BASE)
     zephyr_library_named(BTreeFy-Src)
-    zephyr_library_sources(btreefy.c btreefy_policies.c)
+    zephyr_library_sources(btreefy.c btreefy_policies.c btf_blackboard.c)
     zephyr_library_sources(runners/btf_tree_runner_zephyr.c)
     zephyr_library_link_libraries(zephyr_interface)
 else()

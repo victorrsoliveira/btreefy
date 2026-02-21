@@ -29,8 +29,4 @@ int32_t btf_tick_tree(btf_tree_st *tree);
 
 int32_t btf_tree_controller(btf_tree_st *tree);
 
-int32_t btf_blackboard_update_data(int16_t index, void *data, size_t size);
-
-int32_t btf_blackboard_retrieve_data(int16_t index, void *data, size_t size);
-
 #endif  // BTREEFY_H

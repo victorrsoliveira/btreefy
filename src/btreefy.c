@@ -144,14 +144,3 @@ int32_t btf_tree_controller(btf_tree_st *tree)
     return 0;
 }
 
-int32_t btf_blackboard_update_data(int16_t index, void *data, size_t size)
-{
-    // TODO: Validate parameters. index must be in range of defined values, data non-null and size non-zero
-    return 0;
-}
-
-int32_t btf_blackboard_retrieve_data(int16_t index, void *data, size_t size)
-{
-    // TODO: Validate parameters. index must be in range of defined values, data non-null and size non-zero
-    return 0;
-}
