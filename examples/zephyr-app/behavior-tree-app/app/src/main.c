@@ -9,6 +9,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
 
+#include "btreefy/btf_tree_runner.h"
 #include "btreefy/btreefy.h"
 #include "door_operator_controller.h"
 
@@ -27,7 +28,7 @@
 #endif
 
 extern struct btf_node nodes[];
-extern size_t nodes_size;
+extern size_t          nodes_size;
 
 /*
  * A build error on this line means your board is unsupported.
@@ -61,7 +62,6 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb,
 
     if (current_time - last_button_pressed_evt_time > 50)
     {
-        // printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
         last_button_pressed_evt_time = current_time;
         if (button_pressed_count == 0)
         {
@@ -73,6 +73,8 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb,
 
 void button_timer_cb(struct k_timer *timer_id)
 {
+    bool is_valid = true;
+
     switch (button_pressed_count)
     {
     case 1:
@@ -94,7 +96,13 @@ void button_timer_cb(struct k_timer *timer_id)
     break;
 
     default:
+        is_valid = false;
         break;
+    }
+
+    if (is_valid)
+    {
+        btf_runner_notify_event(BTF_RUNNER_TICK_REQUEST_EVT);
     }
 
     button_pressed_count = 0;
@@ -141,6 +149,7 @@ btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
 {
     printf("Emergency occurred!\n");
     has_emergency_occurred = true;
+    btf_runner_notify_event(BTF_RUNNER_TICK_REQUEST_EVT);
     return BTF_SUCCESS_STATUS;
 }
 
@@ -148,7 +157,8 @@ btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
 
 // ### BT CONDITIONS - START ###
 
-btf_node_status_t is_motor_on_cond(btf_tree_st *tree, void *data, size_t datalen)
+btf_node_status_t is_motor_on_cond(btf_tree_st *tree, void *data,
+                                   size_t datalen)
 {
     return BTF_SUCCESS_STATUS;
 }
@@ -157,7 +167,6 @@ btf_node_status_t is_emerg_btn_pressed_cond(btf_tree_st *tree, void *data,
                                             size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
-
 
     if (button_pressed_flag)
     {
@@ -175,6 +184,11 @@ btf_node_status_t is_open_cond(btf_tree_st *tree, void *data, size_t datalen)
     if (door_operator_ctrl_get_sensor_status() == DOOR_IS_OPEN)
     {
         ret = BTF_SUCCESS_STATUS;
+        printf("Door is open\n");
+    }
+    else if (door_operator_ctrl_get_sensor_status() == DOOR_IS_CLOSED)
+    {
+        printf("Door is closed\n");
     }
 
     return ret;
@@ -200,6 +214,11 @@ btf_node_status_t is_closed_cond(btf_tree_st *tree, void *data, size_t datalen)
     if (door_operator_ctrl_get_sensor_status() == DOOR_IS_CLOSED)
     {
         ret = BTF_SUCCESS_STATUS;
+        printf("Door is closed\n");
+    }
+    else if (door_operator_ctrl_get_sensor_status() == DOOR_IS_OPEN)
+    {
+        printf("Door is open\n");
     }
 
     return ret;
@@ -236,7 +255,6 @@ btf_node_status_t open_door_request_cond(btf_tree_st *tree, void *data,
                                          size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
-
 
     if (open_door_request_flag)
     {
@@ -322,15 +340,12 @@ int main(void)
     {
     }
 
+    if (btf_runner_init(&tree))
+    {
+    }
+
     while (1)
     {
-        printf("Door state: %s\n", door_operator_ctrl_get_sensor_status_string(
-                                       door_operator_ctrl_get_sensor_status()));
-        status = btf_tick_tree(&tree);
-        printf("Tree executed and returned %s\n",
-               btf_global_action_status_string[status]);
-        printf("-------------------------------------------\n");
-
         k_msleep(1000);
     }
 
