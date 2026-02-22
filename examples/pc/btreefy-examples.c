@@ -11,6 +11,8 @@
 #include <pthread.h>
 
 #include "app_blackboard.h"
+#include "btreefy/btf_blackboard.h"
+#include "btreefy/btf_tree_runner.h"
 #include "btreefy/btreefy.h"
 #include "door_operator_controller.h"
 
@@ -20,11 +22,13 @@
 extern struct btf_node nodes[];
 extern size_t          nodes_size;
 
-/* Global state flags — written by scenario thread, read by BT conditions */
-static bool g_button_emergency       = false;
-static bool g_open_request           = false;
-static bool g_close_request          = false;
-static bool g_has_emergency_occurred = false;
+BTF_BLACKBOARD_DEFINE(
+    app_blackboard, struct app_blackboard,
+    BTF_BLACKBOARD_INIT_VAL(.button_emergency = false, .open_request = false,
+                            .close_request          = false,
+                            .has_emergency_occurred = false,
+                            .door_status            = BTFDT_DOOR_IS_OPEN,
+                            .motor_status           = BTFDT_MOTOR_STOP_DOOR));
 
 // ### BT ACTIONS - START ###
 
@@ -39,8 +43,12 @@ btf_node_status_t stop_door_action(btf_tree_st *tree, void *data,
 btf_node_status_t open_door_action(btf_tree_st *tree, void *data,
                                    size_t datalen)
 {
+    enum btfdt_door_sensor_status door_status;
+
     printf("Door is opening... ");
-    if (door_operator_ctrl_get_door_status() != BTFDT_DOOR_IS_OPEN)
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, door_status, door_status);
+
+    if (door_status != BTFDT_DOOR_IS_OPEN)
     {
         printf("request ACCEPTED!\n");
         door_operator_ctrl_set_action(OPEN_DOOR);
@@ -63,8 +71,10 @@ btf_node_status_t close_door_action(btf_tree_st *tree, void *data,
 btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
                                    size_t datalen)
 {
+    bool flag_occurred = true;
     printf("Emergency occurred!\n");
-    g_has_emergency_occurred = true;
+    BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, has_emergency_occurred,
+                               flag_occurred);
     return BTF_SUCCESS_STATUS;
 }
 
@@ -75,82 +85,98 @@ btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
 btf_node_status_t is_motor_on_cond(btf_tree_st *tree, void *data,
                                    size_t datalen)
 {
-    return (door_operator_ctrl_get_motor_status() == BTFDT_MOTOR_STOP_DOOR)
-               ? BTF_FAILURE_STATUS
-               : BTF_SUCCESS_STATUS;
+    enum btfdt_motor_action_status motor_status;
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, motor_status, motor_status);
+    return (motor_status == BTFDT_MOTOR_STOP_DOOR) ? BTF_FAILURE_STATUS
+                                                   : BTF_SUCCESS_STATUS;
 }
 
 btf_node_status_t is_emerg_btn_pressed_cond(btf_tree_st *tree, void *data,
                                             size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
+    bool              flag_occurred;
 
-    if (g_button_emergency)
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, button_emergency,
+                                 flag_occurred);
+    if (flag_occurred)
     {
         printf("Emergency button pressed!\n");
-        g_button_emergency = false;
-        ret                = BTF_SUCCESS_STATUS;
+        flag_occurred = false;
+        BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, button_emergency,
+                                   flag_occurred);
+        ret = BTF_SUCCESS_STATUS;
     }
     return ret;
 }
 
 btf_node_status_t is_open_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    btf_node_status_t             ret = BTF_FAILURE_STATUS;
+    enum btfdt_door_sensor_status door_status;
 
-    if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_OPEN)
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, door_status, door_status);
+    if (door_status == BTFDT_DOOR_IS_OPEN)
     {
         ret = BTF_SUCCESS_STATUS;
         printf("Door is open\n");
     }
-    else if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_CLOSED)
+    else if (door_status == BTFDT_DOOR_IS_CLOSED)
     {
         printf("Door is closed\n");
     }
-
     return ret;
 }
 
 btf_node_status_t is_opening_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    btf_node_status_t              ret = BTF_FAILURE_STATUS;
+    enum btfdt_door_sensor_status  door_status;
+    enum btfdt_motor_action_status motor_status;
 
-    if ((door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_UNDEFINED)
-        && (door_operator_ctrl_get_motor_status() == BTFDT_MOTOR_OPEN_DOOR))
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, door_status, door_status);
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, motor_status, motor_status);
+
+    if ((door_status == BTFDT_DOOR_IS_UNDEFINED)
+        && (motor_status == BTFDT_MOTOR_OPEN_DOOR))
     {
         ret = BTF_SUCCESS_STATUS;
     }
-
     return ret;
 }
 
 btf_node_status_t is_closed_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    btf_node_status_t             ret = BTF_FAILURE_STATUS;
+    enum btfdt_door_sensor_status door_status;
 
-    if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_CLOSED)
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, door_status, door_status);
+    if (door_status == BTFDT_DOOR_IS_CLOSED)
     {
         ret = BTF_SUCCESS_STATUS;
         printf("Door is closed\n");
     }
-    else if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_OPEN)
+    else if (door_status == BTFDT_DOOR_IS_OPEN)
     {
         printf("Door is open\n");
     }
-
     return ret;
 }
 
 btf_node_status_t is_closing_cond(btf_tree_st *tree, void *data, size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    btf_node_status_t              ret = BTF_FAILURE_STATUS;
+    enum btfdt_door_sensor_status  door_status;
+    enum btfdt_motor_action_status motor_status;
 
-    if ((door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_UNDEFINED)
-        && (door_operator_ctrl_get_motor_status() == BTFDT_MOTOR_CLOSE_DOOR))
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, door_status, door_status);
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, motor_status, motor_status);
+
+    if ((door_status == BTFDT_DOOR_IS_UNDEFINED)
+        && (motor_status == BTFDT_MOTOR_CLOSE_DOOR))
     {
         ret = BTF_SUCCESS_STATUS;
     }
-
     return ret;
 }
 
@@ -158,13 +184,17 @@ btf_node_status_t has_emergency_ocurred_cond(btf_tree_st *tree, void *data,
                                              size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
+    bool              flag_occurred;
 
-    if (g_has_emergency_occurred)
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, has_emergency_occurred,
+                                 flag_occurred);
+    if (flag_occurred)
     {
-        g_has_emergency_occurred = false;
-        ret                      = BTF_SUCCESS_STATUS;
+        flag_occurred = false;
+        BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, has_emergency_occurred,
+                                   flag_occurred);
+        ret = BTF_SUCCESS_STATUS;
     }
-
     return ret;
 }
 
@@ -172,14 +202,16 @@ btf_node_status_t open_door_request_cond(btf_tree_st *tree, void *data,
                                          size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
+    bool              flag_occurred;
 
-    if (g_open_request)
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, open_request, flag_occurred);
+    if (flag_occurred)
     {
         printf("Open door request!\n");
-        g_open_request = false;
-        ret            = BTF_SUCCESS_STATUS;
+        flag_occurred = false;
+        BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, open_request, flag_occurred);
+        ret = BTF_SUCCESS_STATUS;
     }
-
     return ret;
 }
 
@@ -187,14 +219,17 @@ btf_node_status_t close_door_request_cond(btf_tree_st *tree, void *data,
                                           size_t datalen)
 {
     btf_node_status_t ret = BTF_FAILURE_STATUS;
+    bool              flag_occurred;
 
-    if (g_close_request)
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, close_request, flag_occurred);
+    if (flag_occurred)
     {
         printf("Close door request!\n");
-        g_close_request = false;
-        ret             = BTF_SUCCESS_STATUS;
+        flag_occurred = false;
+        BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, close_request,
+                                   flag_occurred);
+        ret = BTF_SUCCESS_STATUS;
     }
-
     return ret;
 }
 
@@ -202,26 +237,27 @@ btf_node_status_t close_door_request_cond(btf_tree_st *tree, void *data,
 
 static void *scenario_runner_thread(void *arg)
 {
-    // Wait before starting scenario
+    bool flag_occurred = true;
+
     sleep(2);
 
     // 1. Emergency Button
     printf("\n--- SCENARIO: Emergency Button Pressed ---\n");
-    g_button_emergency = true;
+    BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, button_emergency, flag_occurred);
 
     sleep(5);
 
     // 2. Open Request
     printf("\n--- SCENARIO: Open Request ---\n");
-    g_open_request = true;
+    BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, open_request, flag_occurred);
 
-    sleep(10); // wait for door to open (4s motor + polling time)
+    sleep(10);
 
     // 3. Close Request
     printf("\n--- SCENARIO: Close Request ---\n");
-    g_close_request = true;
+    BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, close_request, flag_occurred);
 
-    sleep(10); // wait for door to close
+    sleep(10);
 
     printf("\n--- SCENARIO COMPLETE ---\n");
     exit(0);
@@ -246,17 +282,22 @@ int main(void)
         return -1;
     }
 
-    // Create scenario thread to simulate user inputs
+    if (btf_runner_init(&tree))
+    {
+        printf("Failed to init runner\n");
+        return -1;
+    }
+
+    // Create scenario thread to drive blackboard updates
     if (pthread_create(&scenario_thread, NULL, scenario_runner_thread, NULL) != 0)
     {
         printf("Failed to create scenario thread\n");
         return -1;
     }
 
-    // Main loop: poll-tick the tree every 1 second
+    // Main loop: runner thread handles all ticking via blackboard events
     while (1)
     {
-        btf_tick_tree(&tree);
         usleep(SLEEP_TIME_MS * 1000);
     }
 
