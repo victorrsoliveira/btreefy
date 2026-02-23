@@ -20,4 +20,6 @@ int32_t btf_runner_init(btf_tree_st *tree);
 
 int32_t btf_runner_notify_event(uint32_t evt);
 
+void btf_runner_execute(void);
+
 #endif  // BTF_TREE_RUNNER_H

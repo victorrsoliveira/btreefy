@@ -21,10 +21,18 @@ add_subdirectory(
 )
 
 add_executable(BTreeFy-PCExample
-    btreefy-examples.c
     btf_nodes_generated.c
     door_operator_controller.c
 )
+
+if(BTREEFY_RUNNER STREQUAL "POSIX")
+    target_sources(BTreeFy-PCExample PRIVATE btreefy-examples.c)
+
+elseif(BTREEFY_RUNNER STREQUAL "BAREMETAL")
+    target_sources(BTreeFy-PCExample PRIVATE btreefy-examples-baremetal.c)
+else()
+    message(FATAL_ERROR "Runner chosen is unknown")
+endif()
 
 target_include_directories(BTreeFy-PCExample PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
