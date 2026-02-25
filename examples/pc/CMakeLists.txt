@@ -20,8 +20,12 @@ add_subdirectory(
     ${CMAKE_CURRENT_BINARY_DIR}/btreefy_lib_bin_dir
 )
 
-add_executable(BTreeFy-PCExample btreefy-examples.c)
+add_executable(BTreeFy-PCExample
+    btreefy-examples.c
+    btf_nodes_generated.c
+    door_operator_controller.c
+)
 
-target_link_libraries(BTreeFy-PCExample PRIVATE BTreeFy-Src)
+target_include_directories(BTreeFy-PCExample PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-# target_include_directories(BTreeFy-Examples PUBLIC "./include")
+target_link_libraries(BTreeFy-PCExample PRIVATE BTreeFy-Src -pthread)

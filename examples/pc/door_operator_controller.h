@@ -28,6 +28,9 @@ enum door_sensor_status
 
 int door_operator_ctrl_init(void);
 
+enum btfdt_door_sensor_status  door_operator_ctrl_get_door_status(void);
+enum btfdt_motor_action_status door_operator_ctrl_get_motor_status(void);
+
 char *door_operator_ctrl_get_sensor_status_string(
     enum door_sensor_status status);
 

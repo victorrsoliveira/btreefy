@@ -1,131 +1,264 @@
+/*
+ * Copyright (c) 2026 Victor Oliveira
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
 
+#include "app_blackboard.h"
 #include "btreefy/btreefy.h"
+#include "door_operator_controller.h"
 
-btf_node_status_t mock_run_ble_action_status         = BTF_SUCCESS_STATUS;
-btf_node_status_t mock_run_lora_action_status        = BTF_RUNNING_STATUS;
-btf_node_status_t mock_reset_variables_action_status = BTF_SUCCESS_STATUS;
+/* 1000 msec = 1 sec */
+#define SLEEP_TIME_MS 1000
 
-btf_node_status_t reset_variables_action(btf_tree_st *tree, void *data,
-                                         size_t datalen)
+extern struct btf_node nodes[];
+extern size_t          nodes_size;
+
+/* Global state flags — written by scenario thread, read by BT conditions */
+static bool g_button_emergency       = false;
+static bool g_open_request           = false;
+static bool g_close_request          = false;
+static bool g_has_emergency_occurred = false;
+
+// ### BT ACTIONS - START ###
+
+btf_node_status_t stop_door_action(btf_tree_st *tree, void *data,
+                                   size_t datalen)
 {
-    return mock_reset_variables_action_status;
-}
-
-btf_node_status_t run_ble_action(btf_tree_st *tree, void *data, size_t datalen)
-{
-    return mock_run_ble_action_status;
-}
-
-btf_node_status_t run_lora_action(btf_tree_st *tree, void *data, size_t datalen)
-{
-    return mock_run_lora_action_status;
-}
-
-btf_node_status_t go_to_sleep_action(btf_tree_st *tree, void *data,
-                                     size_t datalen)
-{
+    printf("Door has stopped.\n");
+    door_operator_ctrl_set_action(STOP_DOOR);
     return BTF_SUCCESS_STATUS;
 }
 
-struct btf_node nodes[] = {
+btf_node_status_t open_door_action(btf_tree_st *tree, void *data,
+                                   size_t datalen)
+{
+    printf("Door is opening... ");
+    if (door_operator_ctrl_get_door_status() != BTFDT_DOOR_IS_OPEN)
+    {
+        printf("request ACCEPTED!\n");
+        door_operator_ctrl_set_action(OPEN_DOOR);
+    }
+    else
+    {
+        printf("but already OPEN, REJECTED!\n");
+    }
+    return BTF_SUCCESS_STATUS;
+}
 
-    [0] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = BTF_NULL_NODE,
-           .child   = 2,
-           .sibling = BTF_NULL_NODE,
-           .action  = NULL,
-           .control = btf_sequence_policy_fn,
-           .name    = "Sequence_1"},
+btf_node_status_t close_door_action(btf_tree_st *tree, void *data,
+                                    size_t datalen)
+{
+    printf("Door is closing... ");
+    door_operator_ctrl_set_action(CLOSE_DOOR);
+    return BTF_SUCCESS_STATUS;
+}
 
-    [1] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = 0,
-           .child   = 2,
-           .sibling = 3,
-           .action  = NULL,
-           .control = btf_success_policy_fn,
-           .name    = "Success_1"},
+btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
+                                   size_t datalen)
+{
+    printf("Emergency occurred!\n");
+    g_has_emergency_occurred = true;
+    return BTF_SUCCESS_STATUS;
+}
 
-    [2] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = 0,
-           .child   = BTF_NULL_NODE,
-           .sibling = 3,
-           .action  = reset_variables_action,
-           .control = NULL,
-           .name    = "Reset_Variables"},
+// ### BT ACTIONS - END ###
 
-    [3] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = 0,
-           .child   = 4,
-           .sibling = 6,
-           .action  = NULL,
-           .control = btf_sequence_policy_fn,
-           .name    = "Sequence_2"},
+// ### BT CONDITIONS - START ###
 
-    [4] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = 3,
-           .child   = BTF_NULL_NODE,
-           .sibling = 5,
-           .action  = run_ble_action,
-           .control = NULL,
-           .name    = "Run_BLE"},
+btf_node_status_t is_motor_on_cond(btf_tree_st *tree, void *data,
+                                   size_t datalen)
+{
+    return (door_operator_ctrl_get_motor_status() == BTFDT_MOTOR_STOP_DOOR)
+               ? BTF_FAILURE_STATUS
+               : BTF_SUCCESS_STATUS;
+}
 
-    [5] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = 3,
-           .child   = BTF_NULL_NODE,
-           .sibling = BTF_NULL_NODE,
-           .action  = run_lora_action,
-           .control = NULL,
-           .name    = "Run_LoRa"},
+btf_node_status_t is_emerg_btn_pressed_cond(btf_tree_st *tree, void *data,
+                                            size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
 
-    [6] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = 0,
-           .child   = 7,
-           .sibling = BTF_NULL_NODE,
-           .action  = NULL,
-           .control = btf_success_policy_fn,
-           .name    = "Success_2"},
+    if (g_button_emergency)
+    {
+        printf("Emergency button pressed!\n");
+        g_button_emergency = false;
+        ret                = BTF_SUCCESS_STATUS;
+    }
+    return ret;
+}
 
-    [7] = {.status  = BTF_UNDEF_STATUS,
-           .parent  = 6,
-           .child   = BTF_NULL_NODE,
-           .sibling = BTF_NULL_NODE,
-           .action  = go_to_sleep_action,
-           .control = NULL,
-           .name    = "Go_To_Sleep"},
-};
+btf_node_status_t is_open_cond(btf_tree_st *tree, void *data, size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_OPEN)
+    {
+        ret = BTF_SUCCESS_STATUS;
+        printf("Door is open\n");
+    }
+    else if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_CLOSED)
+    {
+        printf("Door is closed\n");
+    }
+
+    return ret;
+}
+
+btf_node_status_t is_opening_cond(btf_tree_st *tree, void *data, size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if ((door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_UNDEFINED)
+        && (door_operator_ctrl_get_motor_status() == BTFDT_MOTOR_OPEN_DOOR))
+    {
+        ret = BTF_SUCCESS_STATUS;
+    }
+
+    return ret;
+}
+
+btf_node_status_t is_closed_cond(btf_tree_st *tree, void *data, size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_CLOSED)
+    {
+        ret = BTF_SUCCESS_STATUS;
+        printf("Door is closed\n");
+    }
+    else if (door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_OPEN)
+    {
+        printf("Door is open\n");
+    }
+
+    return ret;
+}
+
+btf_node_status_t is_closing_cond(btf_tree_st *tree, void *data, size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if ((door_operator_ctrl_get_door_status() == BTFDT_DOOR_IS_UNDEFINED)
+        && (door_operator_ctrl_get_motor_status() == BTFDT_MOTOR_CLOSE_DOOR))
+    {
+        ret = BTF_SUCCESS_STATUS;
+    }
+
+    return ret;
+}
+
+btf_node_status_t has_emergency_ocurred_cond(btf_tree_st *tree, void *data,
+                                             size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if (g_has_emergency_occurred)
+    {
+        g_has_emergency_occurred = false;
+        ret                      = BTF_SUCCESS_STATUS;
+    }
+
+    return ret;
+}
+
+btf_node_status_t open_door_request_cond(btf_tree_st *tree, void *data,
+                                         size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if (g_open_request)
+    {
+        printf("Open door request!\n");
+        g_open_request = false;
+        ret            = BTF_SUCCESS_STATUS;
+    }
+
+    return ret;
+}
+
+btf_node_status_t close_door_request_cond(btf_tree_st *tree, void *data,
+                                          size_t datalen)
+{
+    btf_node_status_t ret = BTF_FAILURE_STATUS;
+
+    if (g_close_request)
+    {
+        printf("Close door request!\n");
+        g_close_request = false;
+        ret             = BTF_SUCCESS_STATUS;
+    }
+
+    return ret;
+}
+
+// ### BT CONDITIONS - END ###
+
+static void *scenario_runner_thread(void *arg)
+{
+    // Wait before starting scenario
+    sleep(2);
+
+    // 1. Emergency Button
+    printf("\n--- SCENARIO: Emergency Button Pressed ---\n");
+    g_button_emergency = true;
+
+    sleep(5);
+
+    // 2. Open Request
+    printf("\n--- SCENARIO: Open Request ---\n");
+    g_open_request = true;
+
+    sleep(10); // wait for door to open (4s motor + polling time)
+
+    // 3. Close Request
+    printf("\n--- SCENARIO: Close Request ---\n");
+    g_close_request = true;
+
+    sleep(10); // wait for door to close
+
+    printf("\n--- SCENARIO COMPLETE ---\n");
+    exit(0);
+
+    return NULL;
+}
 
 int main(void)
 {
     btf_tree_st tree;
-    int32_t     status;
+    pthread_t   scenario_thread;
 
-    if (btf_init(&tree, nodes, sizeof(nodes)) == 0)
+    if (door_operator_ctrl_init())
     {
-        for (size_t i = 0; i < 3; i++)
-        {
-            status = btf_tick_tree(&tree);
-            printf("Tree executed and returned %s\n",
-                   btf_global_action_status_string[status]);
-            printf("-------------------------------------------\n");
-            switch (i)
-            {
-            case 0:
-                //   mock_run_ble_action_status = BTF_FAILURE_STATUS;
-                mock_reset_variables_action_status = BTF_FAILURE_STATUS;
-                break;
-
-            case 1:
-                mock_run_lora_action_status        = BTF_SUCCESS_STATUS;
-                mock_reset_variables_action_status = BTF_SUCCESS_STATUS;
-                //   mock_run_ble_action_status = BTF_SUCCESS_STATUS;
-                break;
-
-            default:
-                //   mock_run_ble_action_status = BTF_SUCCESS_STATUS;
-                break;
-            }
-        }
+        printf("Failed to init door controller\n");
+        return -1;
     }
+
+    if (btf_init(&tree, nodes, nodes_size) != 0)
+    {
+        printf("Failed to init tree\n");
+        return -1;
+    }
+
+    // Create scenario thread to simulate user inputs
+    if (pthread_create(&scenario_thread, NULL, scenario_runner_thread, NULL) != 0)
+    {
+        printf("Failed to create scenario thread\n");
+        return -1;
+    }
+
+    // Main loop: poll-tick the tree every 1 second
+    while (1)
+    {
+        btf_tick_tree(&tree);
+        usleep(SLEEP_TIME_MS * 1000);
+    }
+
     return 0;
 }
