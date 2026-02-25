@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <pthread.h>
 
 #include "app_blackboard.h"
 #include "btreefy/btf_blackboard.h"
@@ -267,8 +267,11 @@ static void *scenario_runner_thread(void *arg)
 
 int main(void)
 {
-    struct btf_tree tree;
-    pthread_t   scenario_thread;
+    struct btf_runner        runner;
+    struct btf_runner_config runner_config = {.tick_on_update   = false,
+                                              .tick_interval_ms = 0};
+    btf_tree_st              tree;
+    pthread_t                scenario_thread;
 
     if (door_operator_ctrl_init())
     {
@@ -282,14 +285,15 @@ int main(void)
         return -1;
     }
 
-    if (btf_runner_init(&tree))
+    if (btf_runner_init(&runner, &tree, &runner_config))
     {
         printf("Failed to init runner\n");
         return -1;
     }
 
     // Create scenario thread to drive blackboard updates
-    if (pthread_create(&scenario_thread, NULL, scenario_runner_thread, NULL) != 0)
+    if (pthread_create(&scenario_thread, NULL, scenario_runner_thread, NULL)
+        != 0)
     {
         printf("Failed to create scenario thread\n");
         return -1;
