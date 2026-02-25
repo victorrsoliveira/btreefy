@@ -14,36 +14,26 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "btreefy/btf_blackboard.h"
 #include "app_blackboard.h"
 
 static char *door_sensor_status_string[] = {[DOOR_IS_UNDEFINED] = "UNDEFINED",
                                             [DOOR_IS_OPEN]      = "OPEN",
                                             [DOOR_IS_CLOSED]    = "CLOSED"};
 
-static enum btfdt_door_sensor_status  g_door_status   = BTFDT_DOOR_IS_OPEN;
-static enum btfdt_motor_action_status g_motor_status  = BTFDT_MOTOR_STOP_DOOR;
+static pthread_t      door_timer_thread;
+static pthread_mutex_t door_mutex    = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t  door_cond     = PTHREAD_COND_INITIALIZER;
+static bool            timer_active  = false;
+static bool            stop_timer    = false;
 
-static pthread_t       door_timer_thread;
-static pthread_mutex_t door_mutex   = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t  door_cond    = PTHREAD_COND_INITIALIZER;
-static bool            timer_active = false;
-static bool            stop_timer   = false;
+BTF_BLACKBOARD_DECLARE(app_blackboard, struct app_blackboard);
 
 static void *door_timer_thread_fn(void *arg);
 
 int door_operator_ctrl_init(void)
 {
     return pthread_create(&door_timer_thread, NULL, door_timer_thread_fn, NULL);
-}
-
-enum btfdt_door_sensor_status door_operator_ctrl_get_door_status(void)
-{
-    return g_door_status;
-}
-
-enum btfdt_motor_action_status door_operator_ctrl_get_motor_status(void)
-{
-    return g_motor_status;
 }
 
 char *door_operator_ctrl_get_sensor_status_string(
@@ -54,15 +44,21 @@ char *door_operator_ctrl_get_sensor_status_string(
 
 int door_operator_ctrl_set_action(enum door_action action)
 {
-    if ((enum btfdt_motor_action_status) action != g_motor_status)
+    enum btfdt_door_sensor_status  door_status;
+    enum btfdt_motor_action_status motor_status;
+
+    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, motor_status, motor_status);
+
+    if ((enum btfdt_motor_action_status) action != motor_status)
     {
-        g_motor_status = (enum btfdt_motor_action_status) action;
+        BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, motor_status, action);
 
         pthread_mutex_lock(&door_mutex);
         if ((action == OPEN_DOOR) || (action == CLOSE_DOOR))
         {
-            g_door_status = BTFDT_DOOR_IS_UNDEFINED;
-            timer_active  = true;
+            door_status = BTFDT_DOOR_IS_UNDEFINED;
+            BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, door_status, door_status);
+            timer_active = true;
             pthread_cond_signal(&door_cond);
         }
         else
@@ -77,6 +73,9 @@ int door_operator_ctrl_set_action(enum door_action action)
 
 static void *door_timer_thread_fn(void *arg)
 {
+    enum btfdt_door_sensor_status  door_status;
+    enum btfdt_motor_action_status motor_status;
+
     while (!stop_timer)
     {
         pthread_mutex_lock(&door_mutex);
@@ -97,13 +96,19 @@ static void *door_timer_thread_fn(void *arg)
         if (timer_active)
         {
             printf("Door sensor timer callback\n");
-            if (g_motor_status == BTFDT_MOTOR_OPEN_DOOR)
+            BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, motor_status,
+                                         motor_status);
+            if (motor_status == BTFDT_MOTOR_OPEN_DOOR)
             {
-                g_door_status = BTFDT_DOOR_IS_OPEN;
+                door_status = BTFDT_DOOR_IS_OPEN;
+                BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, door_status,
+                                           door_status);
             }
-            else if (g_motor_status == BTFDT_MOTOR_CLOSE_DOOR)
+            else if (motor_status == BTFDT_MOTOR_CLOSE_DOOR)
             {
-                g_door_status = BTFDT_DOOR_IS_CLOSED;
+                door_status = BTFDT_DOOR_IS_CLOSED;
+                BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, door_status,
+                                           door_status);
             }
             timer_active = false;
         }
