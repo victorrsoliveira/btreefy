@@ -285,7 +285,8 @@ int main(void)
         return -1;
     }
 
-    if (btf_runner_init(&runner, &tree, &runner_config))
+    if (btf_runner_init(&runner, &tree, &BTF_BLACKBOARD_GET(app_blackboard),
+                        &runner_config))
     {
         printf("Failed to init runner\n");
         return -1;

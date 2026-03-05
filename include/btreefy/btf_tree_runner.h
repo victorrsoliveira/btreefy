@@ -34,6 +34,7 @@ struct btf_runner
 };
 
 int32_t btf_runner_init(struct btf_runner *runner, btf_tree_st *tree,
+                        struct btf_blackboard    *blackboard,
                         struct btf_runner_config *config);
 
 int32_t btf_runner_start(struct btf_runner *runner);

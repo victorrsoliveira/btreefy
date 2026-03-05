@@ -12,6 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "btreefy/btf_blackboard.h"
 #include "btreefy/btf_tree_runner.h"
 
 static struct btf_tree *tree_ptr = NULL;
@@ -24,9 +25,11 @@ struct btf_runner_data
     uint32_t        events;
 };
 
+static void  blackboard_to_runner_notify_cb(void *context);
 static void *btf_runner_thread(void *arg);
 
 int32_t btf_runner_init(struct btf_runner *runner, btf_tree_st *tree,
+                        struct btf_blackboard    *blackboard,
                         struct btf_runner_config *config)
 {
     int       err;
@@ -49,7 +52,13 @@ int32_t btf_runner_init(struct btf_runner *runner, btf_tree_st *tree,
     }
 
     runner->is_running = false;
-    runner->data = NULL;
+    runner->data       = NULL;
+
+    if (blackboard != NULL)
+    {
+        btf_blackboard_set_notify_cb(blackboard, blackboard_to_runner_notify_cb,
+                                     runner);
+    }
 
     printf("%s executed\n", __func__);
 
@@ -87,9 +96,16 @@ int32_t btf_runner_notify_event(struct btf_runner *runner, uint32_t evt)
     return 0;
 }
 
+static void blackboard_to_runner_notify_cb(void *context)
+{
+    struct btf_runner *runner = (struct btf_runner *) context;
+
+    btf_runner_notify_event(runner, BTF_RUNNER_BLACKBOARD_EVT);
+}
+
 static void *btf_runner_thread(void *arg)
 {
-    struct btf_runner     *runner = (struct btf_runner *) arg;
+    struct btf_runner *runner = (struct btf_runner *) arg;
 
     // Thread data
     struct btf_runner_data runner_data = {0};
@@ -109,7 +125,7 @@ static void *btf_runner_thread(void *arg)
     }
 
     runner_data.thread = pthread_self();
-    runner->data = &runner_data;
+    runner->data       = &runner_data;
 
     printf("btf_runner_thread has started\n");
 
@@ -133,7 +149,7 @@ static void *btf_runner_thread(void *arg)
         pthread_mutex_unlock(&runner->data->mutex);
 
         printf("%s: tick tree\n", __func__);
-        btf_tick_tree(tree_ptr);
+        btf_tick_tree(runner->tree);
     }
 
     // TODO: Validate if this is correct

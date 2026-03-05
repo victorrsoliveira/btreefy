@@ -16,13 +16,6 @@
 
 #include "btreefy/btreefy.h"
 
-struct btf_blackboard
-{
-    // TODO: Place or calculate arch alignment
-    void  *data;
-    size_t data_size;
-};
-
 #define BTF_UTILS_DO_CONCAT(x, y) x##y
 #define BTF_UTILS_CONCAT(x, y)    BTF_UTILS_DO_CONCAT(x, y)
 
@@ -71,11 +64,27 @@ struct btf_blackboard
             &data, sizeof(data));                                            \
     } while (0)
 
+#define BTF_BLACKBOARD_GET(name) BTF_UTILS_CONCAT(_btf_blackboard_obj_, name)
+
+typedef void (*btf_blackboard_notify_cb_t)(void *context);
+
+struct btf_blackboard
+{
+    // TODO: Place or calculate arch alignment
+    void                      *data;
+    size_t                     data_size;
+    btf_blackboard_notify_cb_t notify_cb;
+    void                      *notify_context;
+};
 
 int32_t btf_blackboard_retrieve_data(struct btf_blackboard *blackboard,
                                      size_t offset, void *data, size_t size);
 
 int32_t btf_blackboard_update_data(struct btf_blackboard *blackboard,
                                    size_t offset, void *data, size_t size);
+
+void btf_blackboard_set_notify_cb(struct btf_blackboard     *blackboard,
+                                  btf_blackboard_notify_cb_t notify_cb,
+                                  void                      *notify_context);
 
 #endif  // BTF_BLACKBOARD_H
