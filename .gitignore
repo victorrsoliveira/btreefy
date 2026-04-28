@@ -33,3 +33,6 @@ launch.json
 
 # Zephyr files
 .west
+
+# Presentation slide PNG exports (generated, not needed for PDF)
+docs/slides/
