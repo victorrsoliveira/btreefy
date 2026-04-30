@@ -1,7 +1,9 @@
 
+set(BTREEFY_SOURCES btreefy.c btreefy_policies.c btreefy_always_actions.c btf_blackboard.c)
+
 if(ZEPHYR_BASE)
     zephyr_library_named(BTreeFy-Src)
-    zephyr_library_sources(btreefy.c btreefy_policies.c btf_blackboard.c)
+    zephyr_library_sources(${BTREEFY_SOURCES})
 
     if(CONFIG_BTREEFY_RUNNER STREQUAL "ZEPHYR")
         zephyr_library_sources(runners/btf_tree_runner_zephyr.c)
@@ -14,7 +16,7 @@ if(ZEPHYR_BASE)
 
     zephyr_library_link_libraries(zephyr_interface)
 else()
-    add_library(BTreeFy-Src STATIC btreefy.c btreefy_policies.c btf_blackboard.c)
+    add_library(BTreeFy-Src STATIC ${BTREEFY_SOURCES})
     if(BTREEFY_RUNNER STREQUAL "POSIX")
         target_sources(BTreeFy-Src PRIVATE runners/btf_tree_runner_posix.c)
     elseif(BTREEFY_RUNNER STREQUAL "ZEPHYR")
