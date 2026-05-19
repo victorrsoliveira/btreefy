@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="test_tree_1">
+    <Sequence>
+      <Fallback>
+        <Sequence>
+          <ScriptCondition name="A"
+                           code="a_cond"/>
+          <Script name="B"
+                  code="b_action"/>
+        </Sequence>
+        <AlwaysFailure name="C"/>
+        <Sequence>
+          <ScriptCondition name="D"
+                           code="d_cond"/>
+          <Script name="E"
+                  code="e_action"/>
+        </Sequence>
+      </Fallback>
+      <AlwaysSuccess name="F"/>
+      <Fallback>
+        <ScriptCondition name="G"
+                         code="g_cond"/>
+        <Script name="H"
+                code="h_action"/>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel/>
+
+</root>
