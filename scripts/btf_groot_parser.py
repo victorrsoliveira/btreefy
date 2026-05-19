@@ -33,6 +33,8 @@ BT_NODES_CARRAY_NODE_DECL_TEMPLATE = \
             .name     = {name}}},
 """
 BT_NODES_CARRAY_DECL_END = "};"
+BT_NODES_SIZE_DECL = f"size_t {BTF_NODES_CARRAY_NAME}_size = sizeof({BTF_NODES_CARRAY_NAME})/sizeof({BTF_NODES_CARRAY_NAME}[0]);"
+
 BTF_CTYPE_POLICY_FUNCTIONS_MAP = \
     {"Sequence": "btf_sequence_policy_fn",
      "Fallback": "btf_fallback_policy_fn",
@@ -171,6 +173,9 @@ def main(args):
             print(s)
             nodes_f.write(s)
         nodes_f.write(BT_NODES_CARRAY_DECL_END)
+        nodes_f.write("\n\n")
+        nodes_f.write(BT_NODES_SIZE_DECL)
+        nodes_f.write("\n")
 
     action_fn_file = args.include_output_dir + '/' + ACTION_FUNCTION_DATA_FILE_NO_EXT+".h"
     with open(action_fn_file, mode='w') as actions_header_f:

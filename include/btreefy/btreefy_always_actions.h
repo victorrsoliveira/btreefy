@@ -12,7 +12,8 @@
 
 #include "btreefy_objs.h"
 
-enum btf_node_status btf_always_success_action(struct btf_tree *tree, void *data, size_t datalen);
-enum btf_node_status btf_always_failure_action(struct btf_tree *tree, void *data, size_t datalen);
+
+enum btf_node_status btf_always_success_action(struct btf_tree *tree);
+enum btf_node_status btf_always_failure_action(struct btf_tree *tree);
 
 #endif  // BTREEFY_ALWAYS_ACTIONS_H
