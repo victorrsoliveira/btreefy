@@ -7,13 +7,14 @@ NODES_DATA_FILE = "btf_nodes_generated.c"
 ACTION_FUNCTION_DATA_FILE_NO_EXT = "btf_action_functions_generated"
 
 BTF_NODES_DATA_FILE_INCLUDE = \
-f"""#include <btreefy/btreefy.h>
-#include <{ACTION_FUNCTION_DATA_FILE_NO_EXT}.h>
+f"""#include "btreefy/btreefy_policies.h"
+#include "btreefy/btreefy_always_actions.h"
+#include "{ACTION_FUNCTION_DATA_FILE_NO_EXT}.h"
 
 """
 
 BTF_ACTION_FN_FILE_INCLUDE = \
-"""#include <btreefy/btreefy.h>
+"""#include "btreefy/btreefy_objs.h"
 
 """
 
@@ -37,6 +38,10 @@ BTF_CTYPE_POLICY_FUNCTIONS_MAP = \
      "Fallback": "btf_fallback_policy_fn",
      "ForceSuccess": "btf_success_policy_fn",
      "ForceFailure": "btf_fail_policy_fn"}
+
+BTF_CTYPE_ALWAYS_ACTION_FUNCTIONS_MAP = \
+    {"AlwaysSuccess": "btf_always_success_action",
+     "AlwaysFailure": "btf_always_failure_action"}
 
 class BTFNode:
 
@@ -154,9 +159,14 @@ def main(args):
             node_name = '"' + node_name + '"'
             if elem.tag in BTF_CTYPE_POLICY_FUNCTIONS_MAP.keys():
                 control_fn_str = BTF_CTYPE_POLICY_FUNCTIONS_MAP[elem.tag]
+            elif elem.tag in BTF_CTYPE_ALWAYS_ACTION_FUNCTIONS_MAP.keys():
+                action_fn_str = BTF_CTYPE_ALWAYS_ACTION_FUNCTIONS_MAP[elem.tag]
             elif elem.tag in ("Script", "ScriptCondition"):
                 action_fn_str = elem.attrib['code']
                 actions_fn_set.add(action_fn_str)
+            else:
+                # TODO: Check if some action must be done
+                pass
             s = BT_NODES_CARRAY_NODE_DECL_TEMPLATE.format(index=node.index, parent=node.parent, child=node.child, sibling=node.sibling, action=action_fn_str, control=control_fn_str, name=node_name)
             print(s)
             nodes_f.write(s)
