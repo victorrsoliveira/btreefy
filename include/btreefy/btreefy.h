@@ -10,8 +10,10 @@
 #ifndef BTREEFY_H
 #define BTREEFY_H
 
-#include "btreefy_objs.h"
-#include "btreefy_policies.h"
+#include "btreefy/btreefy_objs.h"
+#include "btreefy/btreefy_policies.h"
+
+#define BTF_DEBUG_PRINTF_ENABLED 0
 
 #define BTF_ERROR_OK     0U
 #define BTF_ERROR_EINVAL -1
@@ -21,10 +23,10 @@
     (uint32_t)((((uintptr_t) (p_node)) - ((uintptr_t) (p_nodes))) \
                / (uintptr_t) sizeof(struct btf_node))
 
-int32_t btf_init(btf_tree_st *tree, struct btf_node *nodes, uint32_t tree_size);
+int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, uint32_t tree_size);
 
-int32_t btf_tick_tree(btf_tree_st *tree);
+int32_t btf_tick_tree(struct btf_tree *tree);
 
-int32_t btf_tree_controller(btf_tree_st *tree);
+int32_t btf_tree_controller(struct btf_tree *tree);
 
 #endif  // BTREEFY_H

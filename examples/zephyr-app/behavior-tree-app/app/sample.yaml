@@ -1,0 +1,13 @@
+sample:
+  name: BTreeFy Door Controller
+tests:
+  example.btreefy.door_controller:
+    tags:
+      - btreefy
+      - behavior-tree
+      - gpio
+    filter: dt_enabled_alias_with_parent_compat("led0", "gpio-leds") and dt_node_has_alias("sw0")
+    depends_on: gpio
+    harness: console
+    integration_platforms:
+      - native_posix

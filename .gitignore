@@ -1,5 +1,15 @@
 *.bkp
 
+# BTreeFy generated files (hard-coded filenames) <--- TODO: Change files to specific folder
+btf_nodes_generated.c
+btf_action_functions_generated.h
+
+# VSCode
+.vscode
+
+# Python venv
+scripts/.venv
+
 # CMake files
 CMakeFiles/
 CMakeCache.txt
@@ -9,5 +19,17 @@ Makefile
 # CMake build dir
 build/
 
+# clangd
+.cache
+
 # lib files
 *.a
+
+# Python
+.venv
+
+# VSCode
+launch.json
+
+# Zephyr files
+.west

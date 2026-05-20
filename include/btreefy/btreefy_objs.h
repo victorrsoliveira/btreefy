@@ -10,6 +10,7 @@
 #ifndef BTREEFY_OBJS_H
 #define BTREEFY_OBJS_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -19,21 +20,21 @@
  * @brief Node status enumeration
  *
  */
-typedef enum
+enum btf_node_status
 {
     BTF_UNDEF_STATUS,
     BTF_SUCCESS_STATUS,
     BTF_FAILURE_STATUS,
     BTF_RUNNING_STATUS
-} btf_node_status_t;
+};
 
-typedef enum
+enum btf_node_execution_result
 {
     BTF_UNDEF_EXECUTION_RESULT,
     BTF_CONTINUE_EXECUTION_RESULT,
     BTF_RETURN_EXECUTION_RESULT,
     BTF_PAUSE_EXECUTION_RESULT
-} btf_node_execution_result_t;
+};
 
 /**
  * @brief
@@ -41,23 +42,23 @@ typedef enum
  */
 struct btf_node;
 
-typedef struct
+struct btf_tree
 {
     struct btf_node *nodes;
     uint32_t         size;
     uintptr_t        running_node_index;
-} btf_tree_st;
+};
 
 struct btf_node
 {
-    btf_node_status_t status;
+    enum btf_node_status status;
     uint32_t          parent;
     uint32_t          child;
     uint32_t          sibling;
-    btf_node_status_t (*action)(btf_tree_st *tree, void *data, size_t datalen);
-    btf_node_execution_result_t (*control)(btf_tree_st       *tree,
+    enum btf_node_status (*action)(struct btf_tree *tree, void *data, size_t datalen);
+    enum btf_node_execution_result (*control)(struct btf_tree       *tree,
                                            struct btf_node   *child_node,
-                                           btf_node_status_t *status,
+                                           enum btf_node_status *status,
                                            void *data, size_t datalen);
     char *name;
 };
@@ -69,7 +70,7 @@ extern char *btf_global_action_status_string[];
  * in the tree
  *
  */
-typedef btf_node_status_t (*btf_action_fn_t)(btf_tree_st *tree, void *data,
+typedef enum btf_node_status (*btf_action_fn_t)(struct btf_tree *tree, void *data,
                                              size_t datalen);
 
 /**
@@ -77,8 +78,8 @@ typedef btf_node_status_t (*btf_action_fn_t)(btf_tree_st *tree, void *data,
  * in the tree
  *
  */
-typedef btf_node_execution_result_t (*btf_control_fn_t)(
-    btf_tree_st *tree, struct btf_node *child_node, btf_node_status_t *status,
+typedef enum btf_node_execution_result (*btf_control_fn_t)(
+    struct btf_tree *tree, struct btf_node *child_node, enum btf_node_status *status,
     void *data, size_t datalen);
 
 

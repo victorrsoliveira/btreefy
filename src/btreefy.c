@@ -7,7 +7,7 @@
  *
  */
 
-#include "btreefy.h"
+#include "btreefy/btreefy.h"
 
 #include <stdio.h>
 
@@ -23,7 +23,7 @@ char *btf_global_control_status_string[] = {
     [BTF_RETURN_EXECUTION_RESULT]   = "RETURN",
     [BTF_PAUSE_EXECUTION_RESULT]    = "PAUSE"};
 
-int32_t btf_init(btf_tree_st *tree, struct btf_node *nodes, uint32_t tree_size)
+int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, uint32_t tree_size)
 
 {
     if ((tree == NULL) || (nodes == NULL) || (tree_size == 0))
@@ -40,13 +40,13 @@ int32_t btf_init(btf_tree_st *tree, struct btf_node *nodes, uint32_t tree_size)
     return 0;
 }
 
-int32_t btf_tick_tree(btf_tree_st *tree)
+int32_t btf_tick_tree(struct btf_tree *tree)
 {
     uint32_t                    node_index = 0;
     struct btf_node            *p_node     = NULL;
     struct btf_node            *p_parent   = NULL;
-    btf_node_status_t           status     = BTF_UNDEF_STATUS;
-    btf_node_execution_result_t exec_res   = BTF_UNDEF_EXECUTION_RESULT;
+    enum btf_node_status           status     = BTF_UNDEF_STATUS;
+    enum btf_node_execution_result exec_res   = BTF_UNDEF_EXECUTION_RESULT;
 
     if (tree == NULL)
     {
@@ -68,9 +68,11 @@ int32_t btf_tick_tree(btf_tree_st *tree)
             {
                 status         = p_node->action(tree, NULL, 0);
                 p_node->status = status;
+#if BTF_DEBUG_PRINTF_ENABLED
                 printf("Action %s [%d] executed, status = %s\n", p_node->name,
                        BTF_NODE_ARRAY_INDEX(tree->nodes, p_node),
                        btf_global_action_status_string[status]);
+#endif
             }
             else
             {
@@ -93,10 +95,12 @@ int32_t btf_tick_tree(btf_tree_st *tree)
         {
             // Check node status with policy function from parent node
             exec_res = p_parent->control(tree, p_node, &status, NULL, 0);
+#if BTF_DEBUG_PRINTF_ENABLED
             printf("Policy %s [%d] executed, result = %s, ret. status = %s\n",
                    p_parent->name, BTF_NODE_ARRAY_INDEX(tree->nodes, p_parent),
                    btf_global_control_status_string[exec_res],
                    btf_global_action_status_string[status]);
+#endif
 
             if (BTF_CONTINUE_EXECUTION_RESULT == exec_res)
             {
@@ -130,7 +134,7 @@ int32_t btf_tick_tree(btf_tree_st *tree)
     return status;
 }
 
-int32_t btf_tree_controller(btf_tree_st *tree)
+int32_t btf_tree_controller(struct btf_tree *tree)
 {
     if (NULL == tree)
     {
