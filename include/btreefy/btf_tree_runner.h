@@ -16,7 +16,7 @@
 #define BTF_RUNNER_TIME_EVT         2U
 #define BTF_RUNNER_BLACKBOARD_EVT   4U
 
-int32_t btf_runner_init(btf_tree_st *tree);
+int32_t btf_runner_init(struct btf_tree *tree);
 
 int32_t btf_runner_notify_event(uint32_t evt);
 

@@ -11,9 +11,9 @@
 
 #include <stdio.h>
 
-btf_node_execution_result_t btf_sequence_policy_fn(btf_tree_st     *tree,
+enum btf_node_execution_result btf_sequence_policy_fn(struct btf_tree     *tree,
                                                    struct btf_node *child_node,
-                                                   btf_node_status_t *status,
+                                                   enum btf_node_status *status,
                                                    void *data, size_t datalen)
 {
     if (status == NULL)
@@ -53,9 +53,9 @@ btf_node_execution_result_t btf_sequence_policy_fn(btf_tree_st     *tree,
     return BTF_RETURN_EXECUTION_RESULT;
 }
 
-btf_node_execution_result_t btf_fallback_policy_fn(btf_tree_st     *tree,
+enum btf_node_execution_result btf_fallback_policy_fn(struct btf_tree     *tree,
                                                    struct btf_node *child_node,
-                                                   btf_node_status_t *status,
+                                                   enum btf_node_status *status,
                                                    void *data, size_t datalen)
 {
     if (status == NULL)
@@ -95,9 +95,9 @@ btf_node_execution_result_t btf_fallback_policy_fn(btf_tree_st     *tree,
     return BTF_RETURN_EXECUTION_RESULT;
 }
 
-btf_node_execution_result_t btf_success_policy_fn(btf_tree_st       *tree,
+enum btf_node_execution_result btf_success_policy_fn(struct btf_tree       *tree,
                                                   struct btf_node   *child_node,
-                                                  btf_node_status_t *status,
+                                                  enum btf_node_status *status,
                                                   void *data, size_t datalen)
 {
     if (status == NULL)
@@ -111,9 +111,9 @@ btf_node_execution_result_t btf_success_policy_fn(btf_tree_st       *tree,
     return BTF_RETURN_EXECUTION_RESULT;
 }
 
-btf_node_execution_result_t btf_fail_policy_fn(btf_tree_st       *tree,
+enum btf_node_execution_result btf_fail_policy_fn(struct btf_tree       *tree,
                                                struct btf_node   *child_node,
-                                               btf_node_status_t *status,
+                                               enum btf_node_status *status,
                                                void *data, size_t datalen)
 {
     if (status == NULL)

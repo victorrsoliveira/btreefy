@@ -16,7 +16,7 @@
 
 K_EVENT_DEFINE(runner_event);
 
-static btf_tree_st *tree_ptr = NULL;
+static struct btf_tree *tree_ptr = NULL;
 
 static void btf_runner_thread(void *, void *, void *);
 
@@ -24,7 +24,7 @@ K_THREAD_DEFINE(btf_runner_thread_tid, BTF_RUNNER_THREAD_STACK_SIZE,
                 btf_runner_thread, NULL, NULL, NULL, BTF_RUNNER_THREAD_PRIORITY,
                 0, 0);
 
-int32_t btf_runner_init(btf_tree_st *tree)
+int32_t btf_runner_init(struct btf_tree *tree)
 {
     if (tree == NULL)
     {
