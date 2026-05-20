@@ -1,97 +1,65 @@
-.. zephyr:code-sample:: app
-   :name: Example application
+.. zephyr:code-sample:: btreefy-door-controller
+   :name: BTreeFy Door Controller
    :relevant-api: gpio_interface
 
-   Application showing the execution of a Behavior Tree.
+   Application showing the execution of a Behavior Tree to control a door system.
 
 Overview
 ********
 
-The Blinky sample blinks an LED forever using the :ref:`GPIO API <gpio_api>`.
+This example application demonstrates how behavior trees can be used to model an embedded system project using the BTreeFy library.
+
+The application simulates a door controller that manages a motor to open and close a door based on user requests and safety conditions.
 
 The source code shows how to:
 
-#. Get a pin specification from the :ref:`devicetree <dt-guide>` as a
-   :c:struct:`gpio_dt_spec`
-#. Configure the GPIO pin as an output
-#. Toggle the pin forever
+#. Use BTreeFy to execute a behavior tree in a Zephyr environment.
+#. Use a single button with multi-press logic to trigger different events (Emergency, Open Request, Close Request).
+#. Simulate asynchronous hardware behavior (door movement) using Zephyr timers.
+#. Use a blackboard to share state between the behavior tree and the application logic.
 
-See :zephyr:code-sample:`pwm-blinky` for a similar sample that uses the PWM API instead.
+User Interaction
+****************
 
-.. _blinky-sample-requirements:
+The system uses a single button (``sw0``) to receive user commands:
+
+- **1 Press**: Triggers an **Emergency** routine. The door will stop immediately and then open.
+- **2 Presses**: Triggers an **Open Request**.
+- **3 Presses**: Triggers a **Close Request**.
+
+The status of the door and motor is printed to the console.
 
 Requirements
 ************
 
 Your board must:
 
-#. Have an LED connected via a GPIO pin (these are called "User LEDs" on many of
-   Zephyr's :ref:`boards`).
-#. Have the LED configured using the ``led0`` devicetree alias.
+#. Have an LED connected via a GPIO pin (defined as ``led0``).
+#. Have a Button connected via a GPIO pin (defined as ``sw0``).
 
 Building and Running
 ********************
 
-Build and flash Blinky as follows, changing ``reel_board`` for your board:
+Build and flash the application as follows, using ``native_posix`` as an example:
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/basic/blinky
-   :board: reel_board
-   :goals: build flash
+   :zephyr-app: examples/zephyr-app/behavior-tree-app/app
+   :board: native_posix
+   :goals: build run
    :compact:
 
-After flashing, the LED starts to blink and messages with the current LED state
-are printed on the console. If a runtime error occurs, the sample exits without
-printing to the console.
+Expected Output
+***************
 
-Build errors
-************
-
-You will see a build error at the source code line defining the ``struct
-gpio_dt_spec led`` variable if you try to build Blinky for an unsupported
-board.
-
-On GCC-based toolchains, the error looks like this:
+When running the application, you will see logs indicating the button presses and the behavior tree's response. For example:
 
 .. code-block:: none
 
-   error: '__device_dts_ord_DT_N_ALIAS_led_P_gpios_IDX_0_PH_ORD' undeclared here (not in a function)
-
-Adding board support
-********************
-
-To add support for your board, add something like this to your devicetree:
-
-.. code-block:: DTS
-
-   / {
-   	aliases {
-   		led0 = &myled0;
-   	};
-
-   	leds {
-   		compatible = "gpio-leds";
-   		myled0: led_0 {
-   			gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
-                };
-   	};
-   };
-
-The above sets your board's ``led0`` alias to use pin 13 on GPIO controller
-``gpio0``. The pin flags :c:macro:`GPIO_ACTIVE_HIGH` mean the LED is on when
-the pin is set to its high state, and off when the pin is in its low state.
-
-Tips:
-
-- See :dtcompatible:`gpio-leds` for more information on defining GPIO-based LEDs
-  in devicetree.
-
-- If you're not sure what to do, check the devicetrees for supported boards which
-  use the same SoC as your target. See :ref:`get-devicetree-outputs` for details.
-
-- See :zephyr_file:`include/zephyr/dt-bindings/gpio/gpio.h` for the flags you can use
-  in devicetree.
-
-- If the LED is built in to your board hardware, the alias should be defined in
-  your :ref:`BOARD.dts file <devicetree-in-out-files>`. Otherwise, you can
-  define one in a :ref:`devicetree overlay <set-devicetree-overlays>`.
+   Set up button at GPIO_0 pin 1
+   Button timer callback executed
+   button_pressed_count = 2
+   Open request on timer callback
+   Door is opening...  request ACCEPTED!
+   Door sensor timer callback
+   Door sensor timer callback
+   Door is open

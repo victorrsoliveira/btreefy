@@ -1,12 +1,13 @@
 sample:
-  name: Example application
+  name: BTreeFy Door Controller
 tests:
-  sample.basic.blinky:
+  example.btreefy.door_controller:
     tags:
-      - LED
+      - btreefy
+      - behavior-tree
       - gpio
-    filter: dt_enabled_alias_with_parent_compat("led0", "gpio-leds")
+    filter: dt_enabled_alias_with_parent_compat("led0", "gpio-leds") and dt_node_has_alias("sw0")
     depends_on: gpio
-    harness: led
+    harness: console
     integration_platforms:
-      - nucleo_f091rc
+      - native_posix
