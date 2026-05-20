@@ -13,7 +13,7 @@
 
 #include "btreefy/btf_tree_runner.h"
 
-static btf_tree_st *tree_ptr = NULL;
+static struct btf_tree *tree_ptr = NULL;
 
 static pthread_t       runner_thread;
 static pthread_mutex_t runner_mutex;
@@ -22,7 +22,7 @@ static uint32_t        runner_events = 0;
 
 static void *btf_runner_thread(void *arg);
 
-int32_t btf_runner_init(btf_tree_st *tree)
+int32_t btf_runner_init(struct btf_tree *tree)
 {
     int err;
 

@@ -32,7 +32,7 @@ BTF_BLACKBOARD_DEFINE(
 
 // ### BT ACTIONS - START ###
 
-btf_node_status_t stop_door_action(btf_tree_st *tree, void *data,
+enum btf_node_status stop_door_action(struct btf_tree *tree, void *data,
                                    size_t datalen)
 {
     printf("Door has stopped.\n");
@@ -40,7 +40,7 @@ btf_node_status_t stop_door_action(btf_tree_st *tree, void *data,
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t open_door_action(btf_tree_st *tree, void *data,
+enum btf_node_status open_door_action(struct btf_tree *tree, void *data,
                                    size_t datalen)
 {
     enum btfdt_door_sensor_status door_status;
@@ -60,7 +60,7 @@ btf_node_status_t open_door_action(btf_tree_st *tree, void *data,
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t close_door_action(btf_tree_st *tree, void *data,
+enum btf_node_status close_door_action(struct btf_tree *tree, void *data,
                                     size_t datalen)
 {
     printf("Door is closing... ");
@@ -68,7 +68,7 @@ btf_node_status_t close_door_action(btf_tree_st *tree, void *data,
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
+enum btf_node_status emergency_action(struct btf_tree *tree, void *data,
                                    size_t datalen)
 {
     bool flag_occurred = true;
@@ -82,7 +82,7 @@ btf_node_status_t emergency_action(btf_tree_st *tree, void *data,
 
 // ### BT CONDITIONS - START ###
 
-btf_node_status_t is_motor_on_cond(btf_tree_st *tree, void *data,
+enum btf_node_status is_motor_on_cond(struct btf_tree *tree, void *data,
                                    size_t datalen)
 {
     enum btfdt_motor_action_status motor_status;
@@ -91,10 +91,10 @@ btf_node_status_t is_motor_on_cond(btf_tree_st *tree, void *data,
                                                    : BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t is_emerg_btn_pressed_cond(btf_tree_st *tree, void *data,
+enum btf_node_status is_emerg_btn_pressed_cond(struct btf_tree *tree, void *data,
                                             size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    enum btf_node_status ret = BTF_FAILURE_STATUS;
     bool              flag_occurred;
 
     BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, button_emergency,
@@ -110,9 +110,9 @@ btf_node_status_t is_emerg_btn_pressed_cond(btf_tree_st *tree, void *data,
     return ret;
 }
 
-btf_node_status_t is_open_cond(btf_tree_st *tree, void *data, size_t datalen)
+enum btf_node_status is_open_cond(struct btf_tree *tree, void *data, size_t datalen)
 {
-    btf_node_status_t             ret = BTF_FAILURE_STATUS;
+    enum btf_node_status             ret = BTF_FAILURE_STATUS;
     enum btfdt_door_sensor_status door_status;
 
     BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, door_status, door_status);
@@ -128,9 +128,9 @@ btf_node_status_t is_open_cond(btf_tree_st *tree, void *data, size_t datalen)
     return ret;
 }
 
-btf_node_status_t is_opening_cond(btf_tree_st *tree, void *data, size_t datalen)
+enum btf_node_status is_opening_cond(struct btf_tree *tree, void *data, size_t datalen)
 {
-    btf_node_status_t              ret = BTF_FAILURE_STATUS;
+    enum btf_node_status              ret = BTF_FAILURE_STATUS;
     enum btfdt_door_sensor_status  door_status;
     enum btfdt_motor_action_status motor_status;
 
@@ -145,9 +145,9 @@ btf_node_status_t is_opening_cond(btf_tree_st *tree, void *data, size_t datalen)
     return ret;
 }
 
-btf_node_status_t is_closed_cond(btf_tree_st *tree, void *data, size_t datalen)
+enum btf_node_status is_closed_cond(struct btf_tree *tree, void *data, size_t datalen)
 {
-    btf_node_status_t             ret = BTF_FAILURE_STATUS;
+    enum btf_node_status             ret = BTF_FAILURE_STATUS;
     enum btfdt_door_sensor_status door_status;
 
     BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, door_status, door_status);
@@ -163,9 +163,9 @@ btf_node_status_t is_closed_cond(btf_tree_st *tree, void *data, size_t datalen)
     return ret;
 }
 
-btf_node_status_t is_closing_cond(btf_tree_st *tree, void *data, size_t datalen)
+enum btf_node_status is_closing_cond(struct btf_tree *tree, void *data, size_t datalen)
 {
-    btf_node_status_t              ret = BTF_FAILURE_STATUS;
+    enum btf_node_status              ret = BTF_FAILURE_STATUS;
     enum btfdt_door_sensor_status  door_status;
     enum btfdt_motor_action_status motor_status;
 
@@ -180,10 +180,10 @@ btf_node_status_t is_closing_cond(btf_tree_st *tree, void *data, size_t datalen)
     return ret;
 }
 
-btf_node_status_t has_emergency_ocurred_cond(btf_tree_st *tree, void *data,
+enum btf_node_status has_emergency_ocurred_cond(struct btf_tree *tree, void *data,
                                              size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    enum btf_node_status ret = BTF_FAILURE_STATUS;
     bool              flag_occurred;
 
     BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, has_emergency_occurred,
@@ -198,10 +198,10 @@ btf_node_status_t has_emergency_ocurred_cond(btf_tree_st *tree, void *data,
     return ret;
 }
 
-btf_node_status_t open_door_request_cond(btf_tree_st *tree, void *data,
+enum btf_node_status open_door_request_cond(struct btf_tree *tree, void *data,
                                          size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    enum btf_node_status ret = BTF_FAILURE_STATUS;
     bool              flag_occurred;
 
     BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, open_request, flag_occurred);
@@ -215,10 +215,10 @@ btf_node_status_t open_door_request_cond(btf_tree_st *tree, void *data,
     return ret;
 }
 
-btf_node_status_t close_door_request_cond(btf_tree_st *tree, void *data,
+enum btf_node_status close_door_request_cond(struct btf_tree *tree, void *data,
                                           size_t datalen)
 {
-    btf_node_status_t ret = BTF_FAILURE_STATUS;
+    enum btf_node_status ret = BTF_FAILURE_STATUS;
     bool              flag_occurred;
 
     BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, close_request, flag_occurred);
@@ -267,7 +267,7 @@ static void *scenario_runner_thread(void *arg)
 
 int main(void)
 {
-    btf_tree_st tree;
+    struct btf_tree tree;
     pthread_t   scenario_thread;
 
     if (door_operator_ctrl_init())

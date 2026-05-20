@@ -20,7 +20,7 @@ BTF_ACTION_FN_FILE_INCLUDE = \
 
 BTF_NODE_STRUCT_CTYPE = "struct btf_node"
 BTF_NODES_CARRAY_NAME = "nodes"
-BTF_ACTION_FUNCTION_NAME_CTYPE = "btf_node_status_t {name}(btf_tree_st *tree, void *data, size_t datalen)"
+BTF_ACTION_FUNCTION_NAME_CTYPE = "enum btf_node_status {name}(struct btf_tree *tree, void *data, size_t datalen)"
 BT_NODES_CARRAY_DECL_START = f"{BTF_NODE_STRUCT_CTYPE} {BTF_NODES_CARRAY_NAME}[] = {{"
 BT_NODES_CARRAY_NODE_DECL_TEMPLATE = \
 """
