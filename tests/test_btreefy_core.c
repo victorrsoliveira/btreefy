@@ -25,32 +25,32 @@ void tearDown(void)
     // clean stuff up here
 }
 
-btf_node_status_t d_cond(btf_tree_st *tree)
+enum btf_node_status d_cond(struct btf_tree *tree)
 {
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t b_action(btf_tree_st *tree)
+enum btf_node_status b_action(struct btf_tree *tree)
 {
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t g_cond(btf_tree_st *tree)
+enum btf_node_status g_cond(struct btf_tree *tree)
 {
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t h_action(btf_tree_st *tree)
+enum btf_node_status h_action(struct btf_tree *tree)
 {
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t e_action(btf_tree_st *tree)
+enum btf_node_status e_action(struct btf_tree *tree)
 {
     return BTF_SUCCESS_STATUS;
 }
 
-btf_node_status_t a_cond(btf_tree_st *tree)
+enum btf_node_status a_cond(struct btf_tree *tree)
 {
     struct test_blackboard bb;
     btf_tree_copy_data(tree, &bb, sizeof(bb));
@@ -62,7 +62,7 @@ btf_node_status_t a_cond(btf_tree_st *tree)
 
 void test_btf_init_should_initialize_tree(void)
 {
-    btf_tree_st            tree;
+    struct btf_tree            tree;
     uint32_t               tree_size  = nodes_size;
     struct test_blackboard blackboard = {.value = 0xCAFE,
                                          .cond1 = true,
