@@ -11,12 +11,12 @@
 #include "btreefy/btreefy_objs.h"
 
 
-enum btf_node_status btf_always_success_action(struct btf_tree *tree, void *data, size_t datalen)
+enum btf_node_status btf_always_success_action(struct btf_tree *tree)
 {
     return BTF_SUCCESS_STATUS;
 }
 
-enum btf_node_status btf_always_failure_action(struct btf_tree *tree, void *data, size_t datalen)
+enum btf_node_status btf_always_failure_action(struct btf_tree *tree)
 {
     return BTF_FAILURE_STATUS;
 }

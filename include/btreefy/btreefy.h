@@ -10,6 +10,9 @@
 #ifndef BTREEFY_H
 #define BTREEFY_H
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "btreefy/btreefy_objs.h"
 #include "btreefy/btreefy_policies.h"
 
@@ -24,6 +27,8 @@
                / (uintptr_t) sizeof(struct btf_node))
 
 int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, uint32_t tree_size);
+
+int32_t btf_set_data(struct btf_tree *tree, void * data, size_t datalen);
 
 int32_t btf_tick_tree(struct btf_tree *tree);
 

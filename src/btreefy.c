@@ -23,7 +23,8 @@ char *btf_global_control_status_string[] = {
     [BTF_RETURN_EXECUTION_RESULT]   = "RETURN",
     [BTF_PAUSE_EXECUTION_RESULT]    = "PAUSE"};
 
-int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, uint32_t tree_size)
+int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes,
+                 uint32_t tree_size)
 
 {
     if ((tree == NULL) || (nodes == NULL) || (tree_size == 0))
@@ -40,11 +41,24 @@ int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, uint32_t tree_si
     return 0;
 }
 
+int32_t btf_set_data(struct btf_tree *tree, void *data, size_t datalen)
+{
+    if ((tree == NULL) || (data == NULL) || (datalen == 0))
+    {
+        return BTF_ERROR_EINVAL;
+    }
+
+    tree->data    = data;
+    tree->datalen = datalen;
+
+    return 0;
+}
+
 int32_t btf_tick_tree(struct btf_tree *tree)
 {
-    uint32_t                    node_index = 0;
-    struct btf_node            *p_node     = NULL;
-    struct btf_node            *p_parent   = NULL;
+    uint32_t                       node_index = 0;
+    struct btf_node               *p_node     = NULL;
+    struct btf_node               *p_parent   = NULL;
     enum btf_node_status           status     = BTF_UNDEF_STATUS;
     enum btf_node_execution_result exec_res   = BTF_UNDEF_EXECUTION_RESULT;
 
@@ -57,7 +71,7 @@ int32_t btf_tick_tree(struct btf_tree *tree)
     p_node   = &tree->nodes[0];
     p_parent = &tree->nodes[p_node->parent];
 
-    // Loop until status is defined pointer to node is root again
+    // Loop until status is defined and pointer to node is root again
     while (!((status != BTF_UNDEF_STATUS) && (p_node->parent == BTF_NULL_NODE)))
     {
         // Look for leaf node using DFS approach
@@ -66,7 +80,7 @@ int32_t btf_tick_tree(struct btf_tree *tree)
             // Leaf node has been reached
             if (p_node->child == BTF_NULL_NODE)
             {
-                status         = p_node->action(tree, NULL, 0);
+                status         = p_node->action(tree);
                 p_node->status = status;
 #if BTF_DEBUG_PRINTF_ENABLED
                 printf("Action %s [%d] executed, status = %s\n", p_node->name,
@@ -94,7 +108,7 @@ int32_t btf_tick_tree(struct btf_tree *tree)
         else
         {
             // Check node status with policy function from parent node
-            exec_res = p_parent->control(tree, p_node, &status, NULL, 0);
+            exec_res = p_parent->control(tree, p_node, &status);
 #if BTF_DEBUG_PRINTF_ENABLED
             printf("Policy %s [%d] executed, result = %s, ret. status = %s\n",
                    p_parent->name, BTF_NODE_ARRAY_INDEX(tree->nodes, p_parent),
