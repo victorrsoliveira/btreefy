@@ -10,6 +10,7 @@
 #include "btreefy/btreefy.h"
 
 #include <stdio.h>
+#include "btreefy/btreefy_objs.h"
 
 // Global
 char *btf_global_action_status_string[] = {[BTF_UNDEF_STATUS]   = "UNDEF",
@@ -80,7 +81,7 @@ int32_t btf_tick_tree(struct btf_tree *tree)
             // Leaf node has been reached
             if (p_node->child == BTF_NULL_NODE)
             {
-                status         = p_node->action(tree);
+                status         = p_node->action(tree, BTF_TICK_SIGNAL);
                 p_node->status = status;
 #if BTF_DEBUG_PRINTF_ENABLED
                 printf("Action %s [%d] executed, status = %s\n", p_node->name,

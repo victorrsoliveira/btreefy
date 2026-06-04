@@ -37,6 +37,13 @@ enum btf_node_execution_result
     BTF_PAUSE_EXECUTION_RESULT
 };
 
+enum btf_tree_signal
+{
+    BTF_UNDEFINED_SIGNAL,
+    BTF_TICK_SIGNAL,
+    BTF_ABORT_SIGNAL
+};
+
 /**
  * @brief
  *
@@ -67,7 +74,7 @@ struct btf_node
     uint32_t          parent;
     uint32_t          child;
     uint32_t          sibling;
-    enum btf_node_status (*action)(struct btf_tree *tree);
+    enum btf_node_status (*action)(struct btf_tree *tree, enum btf_tree_signal signal);
     enum btf_node_execution_result (*control)(struct btf_tree       *tree,
                                            struct btf_node   *child_node,
                                            enum btf_node_status *status);
