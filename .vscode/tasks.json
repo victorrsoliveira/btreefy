@@ -1,0 +1,20 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake Build Project",
+            "type": "shell",
+            "command": "rm -rf ./build && cmake . -B build -DBTREEFY_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug && cd build && make",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

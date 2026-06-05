@@ -4,8 +4,11 @@
 btf_nodes_generated.c
 btf_action_functions_generated.h
 
-# VSCode
-.vscode
+# VSCode - ignores all files in .vscode except launch.json and tasks.json
+.vscode/*
+
+!.vscode/launch.json
+!.vscode/tasks.json
 
 # Python venv
 scripts/.venv
@@ -27,9 +30,6 @@ build/
 
 # Python
 .venv
-
-# VSCode
-launch.json
 
 # Zephyr files
 .west
