@@ -129,34 +129,43 @@ The binary variable count $n(n-1)$ is the driver of intractability:
   The plot confirms the exponential wall predicted by the $O(n^2)$ binary
   variable analysis:
 
-  - For $n <= 10$: CBC terminates *optimally* in under 10 seconds on all instances.
-  - For $n = 12$: solve times begin to spread — some instances optimal in seconds, others require minutes.
-  - For $n >= 15$: CBC consistently hits or approaches the 5-minute timeout without proving optimality.
-  - For $n = 20$: all 5 instances timed out; CBC reported a feasible but unverified incumbent.
+  - For $n <= 10$: CBC terminates *optimally* in under 60 seconds on all instances.
+  - For $n = 12$: solve times span 83 s–300 s; one instance (seed=4) hit the exact timeout boundary.
+  - For $n >= 15$: *every* instance saturated the 5-minute wall-clock limit.
+  - For $n = 20$: all 5 instances timed out at exactly ~300 s.
 
-  *The empirical failure point is $n approx 15$*, consistent with the
-  $O(n^2)$ binary count analysis and the prediction in the problem specification.
+  *The empirical failure point is $n approx 12$–$15$*, consistent with the
+  $O(n^2)$ binary count analysis.
   #ref-cite("Petit, 2011 — MinLA scaling characterisation")
+]
+
+#note-box[
+  *Note on CBC status at timeout:* For $n >= 15$, the solver reported status
+  `"Optimal"` despite saturating the time limit. This is a known PuLP/CBC
+  behaviour: when the branch-and-bound tree is exhausted *or* the incumbent
+  matches the LP relaxation bound at the moment of timeout, CBC marks the
+  solution optimal. The ~300 s wall times confirm these were timeout-bounded
+  runs, not fast proofs. For the Optimality Gap analysis in Phase 4, only
+  instances with `solve_time < 250 s` are treated as verified-optimal ground
+  truth (i.e., $n <= 12$ only).
 ]
 
 == Summary Table
 
-The table below shows the mean solve time and outcome per $n$ value across
-the 5 random instances. "Optimal" means CBC proved the solution is globally
-optimal within the time limit; "Feasible" means a valid but potentially
-suboptimal layout was returned when the timer expired.
-
-#card(title: "Scaling results summary", color: border)[
+#card(title: "Scaling results — measured data", color: border)[
   #set text(size: 10pt, font: "Fira Code")
   ```
-  n   binary_vars  mean_time(s)  outcomes
-  5          20       < 0.5       5x Optimal
-  8          56       < 1.0       5x Optimal
-  10         90       < 5.0       5x Optimal
-  12        132       ~30–120     mix Optimal/Feasible
-  15        210       >300        Feasible/Timeout
-  20        380       >300        Timeout
+  n   bin_vars  avg_time(s)  min_time   max_time   verified?
+   5        20         0.45      0.20s      0.92s   YES (all Optimal)
+   8        56         3.50      1.64s      7.11s   YES (all Optimal)
+  10        90        39.71     23.38s     56.38s   YES (all Optimal)
+  12       132       173.60     82.97s    300.45s   YES (4/5 clear)
+  15       210       300.35    300.27s    300.43s   NO  (timeout-bounded)
+  20       380       300.23    300.19s    300.31s   NO  (timeout-bounded)
   ```
+  #v(4pt)
+  #set text(size: 9pt, font: "Libertinus Serif")
+  Note: n=12 seed=4 hit the timeout boundary and is treated as unverified for Phase 4.
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
