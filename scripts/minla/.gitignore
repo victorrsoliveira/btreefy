@@ -11,3 +11,6 @@ docs/figures/
 
 # Compiled PDF reports (generated from .typ source)
 docs/*.pdf
+
+# Keep instance documentation (manually curated, not generated output)
+!docs/scaling_analysis_instances/
