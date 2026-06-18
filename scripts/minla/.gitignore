@@ -1,0 +1,13 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Experiment results (generated data — not source)
+results/
+
+# Generated figures (produced by experiment scripts)
+docs/figures/
+
+# Compiled PDF reports (generated from .typ source)
+docs/*.pdf
