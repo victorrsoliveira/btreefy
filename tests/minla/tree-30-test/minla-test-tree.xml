@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="main">
+    <Sequence>
+      <Fallback>
+        <Sequence>
+          <Fallback>
+            <Script code="A"/>
+            <Script code="B"/>
+          </Fallback>
+          <Fallback>
+            <Script code="C"/>
+            <Script code="D"/>
+          </Fallback>
+        </Sequence>
+        <Sequence>
+          <Fallback>
+            <Script code="E"/>
+            <Script code="F"/>
+          </Fallback>
+          <Fallback>
+            <Script code="G"/>
+            <Script code="H"/>
+          </Fallback>
+        </Sequence>
+      </Fallback>
+      <Fallback>
+        <Sequence>
+          <Fallback>
+            <Script code="I"/>
+            <Script code="J"/>
+          </Fallback>
+          <Fallback>
+            <Script code="K"/>
+            <Script code="L"/>
+          </Fallback>
+        </Sequence>
+        <Sequence>
+          <Fallback>
+            <Script code="M"/>
+            <Script code="N"/>
+          </Fallback>
+          <Fallback>
+            <Script code="O"/>
+            <Script code="P"/>
+          </Fallback>
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel/>
+
+</root>

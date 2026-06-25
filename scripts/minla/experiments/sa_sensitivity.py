@@ -22,6 +22,7 @@ Run from repo root:
 import os
 import sys
 import csv
+import time
 
 # ── Path setup ────────────────────────────────────────────────────────────────
 _HERE        = os.path.dirname(os.path.abspath(__file__))   # .../experiments/
@@ -117,29 +118,33 @@ def run_sweep(instances: list[dict]) -> list[dict]:
 
         # SA sweep over alpha values
         for alpha in ALPHAS:
-            result = solve(g, alpha=alpha, seed=SA_SEED)
+            t_start = time.perf_counter()
+            result  = solve(g, alpha=alpha, seed=SA_SEED)
+            solve_time_ms = (time.perf_counter() - t_start) * 1000
+
             gap_str = ""
             if inst["milp_cost"]:
                 gap = (result.cost - inst["milp_cost"]) / inst["milp_cost"] * 100
                 gap_str = f"  gap={gap:+.1f}%"
             print(
                 f"  α={alpha}  cost={result.cost:.1f}  "
-                f"iters={result.iterations}{gap_str}"
+                f"iters={result.iterations}  time={solve_time_ms:.2f}ms{gap_str}"
             )
             inst.setdefault("results", {})[alpha] = result
 
             row = {
-                "instance":  name,
-                "n":         g.n,
-                "alpha":     alpha,
-                "dfs_cost":  dfs_cost,
+                "instance":         name,
+                "n":                g.n,
+                "alpha":            alpha,
+                "dfs_cost":         dfs_cost,
                 "fiedler_init_cost": fiedler_cost,
-                "sa_cost":   result.cost,
-                "iters":     result.iterations,
-                "milp_cost": inst["milp_cost"] if inst["milp_cost"] else "",
-                "gap_pct":   round((result.cost - inst["milp_cost"]) /
-                                   inst["milp_cost"] * 100, 2)
-                             if inst["milp_cost"] else "",
+                "sa_cost":          result.cost,
+                "iters":            result.iterations,
+                "solve_time_ms":    round(solve_time_ms, 3),
+                "milp_cost":        inst["milp_cost"] if inst["milp_cost"] else "",
+                "gap_pct":          round((result.cost - inst["milp_cost"]) /
+                                         inst["milp_cost"] * 100, 2)
+                                    if inst["milp_cost"] else "",
             }
             summary_rows.append(row)
 
@@ -306,7 +311,7 @@ if __name__ == "__main__":
 
     # Write summary CSV
     fieldnames = ["instance", "n", "alpha", "dfs_cost",
-                  "fiedler_init_cost", "sa_cost", "iters",
+                  "fiedler_init_cost", "sa_cost", "iters", "solve_time_ms",
                   "milp_cost", "gap_pct"]
     with open(CSV_PATH, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
