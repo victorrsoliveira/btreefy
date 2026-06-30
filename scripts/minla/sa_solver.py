@@ -187,13 +187,28 @@ def solve(
     n = graph.n
 
     # ── 1. Fiedler initialization ─────────────────────────────────────────
+    initial_perm = [i for i in range(graph.n)]
+    cost_before_fiedler = minla_cost(graph, initial_perm)
+
     perm = fiedler_permutation(graph)
     C = minla_cost(graph, perm)
     initial_cost = C
 
+    # Ignore Fiedler initialization if it is worse than initial permutation
+    if cost_before_fiedler < C:
+        print(f"Cost w/ Fiedler init. = {C} vs Cost init. perm. = {cost_before_fiedler}")
+        initial_cost = cost_before_fiedler
+        C = initial_cost
+        perm = initial_perm
+
     # ── 2. Temperature schedule ───────────────────────────────────────────
     T0 = sa_initial_temperature(graph, perm)   # initial temperature = initial cost (≥ 1 guard)
+    # T0 = C
     T = T0
+
+    print(f"Cost before Fiedler: {cost_before_fiedler}")
+    print(f"Initial temperature: {T0}")
+    print(f"Initial cost: {initial_cost}")
 
     # Estimate total iterations for auto record_every
     total_est = int(math.log(T_min / T0) / math.log(alpha)) if alpha < 1.0 else 1
