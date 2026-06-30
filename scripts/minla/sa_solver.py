@@ -98,6 +98,64 @@ def fiedler_permutation(graph: BTGraph) -> List[int]:
 
     return perm
 
+def produce_neighbors_swap(n: int, rng: _random.Random) -> Tuple[int, int]:
+    # Initialize with equal values for first run
+    a = b = 0
+
+    while a == b:
+        a = rng.randrange(n)
+        b = rng.randrange(n)
+
+    return (a, b)
+
+def sa_initial_temperature(graph: BTGraph, 
+                                  perm: List[int], 
+                                  prob: float = 0.8, 
+                                  iter: int = 100, 
+                                  around_initial_perm: bool = False,
+                                  seed: int = 42):
+    """
+    Calculates the initial temperature for Simulated Annealing based on a target 
+    acceptance ratio for worsening moves.
+    """
+    curr_perm = perm.copy()
+    rng = _random.Random(seed)
+    n = graph.n
+    
+    sum_worsening_delta = 0.0
+    count_worsening = 0
+    
+    # 1. Run the short dummy loop to sample the landscape
+    for _ in range(iter):
+        # Random swap of two distinct nodes
+        a, b = produce_neighbors_swap(n, rng)
+
+        delta_c = incremental_cost_delta(graph, curr_perm, a, b)
+        
+        # 2. Only track moves that worsen the layout
+        if delta_c > 0:
+            sum_worsening_delta += delta_c
+            count_worsening += 1
+            
+        # 3. Accept the move unconditionally to perform a "random walk".
+        # This ensures we sample the neighborhood rather than just testing 
+        # the immediate neighbors of the starting point.
+        if around_initial_perm == False:
+            curr_perm[a], curr_perm[b] = curr_perm[b], curr_perm[a]
+        
+    # 4. Edge Case Handling: Prevent division by zero
+    if count_worsening == 0:
+        print("Warning: No worsening moves found in dummy run. Using fallback.")
+        # Fallback: a small default temperature to prevent crashing
+        return 1.0 
+        
+    # 5. Calculate the average cost increase
+    avg_worsening_delta = sum_worsening_delta / count_worsening
+    
+    # 6. Apply the formula to find T0
+    t0 = -avg_worsening_delta / math.log(prob)
+    
+    return t0
 
 # ── Simulated Annealing ───────────────────────────────────────────────────────
 
@@ -134,7 +192,7 @@ def solve(
     initial_cost = C
 
     # ── 2. Temperature schedule ───────────────────────────────────────────
-    T0 = max(C, 1.0)   # initial temperature = initial cost (≥ 1 guard)
+    T0 = sa_initial_temperature(graph, perm)   # initial temperature = initial cost (≥ 1 guard)
     T = T0
 
     # Estimate total iterations for auto record_every
