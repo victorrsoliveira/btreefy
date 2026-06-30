@@ -68,8 +68,8 @@
 
   #v(10pt)
   Nós conectados que estão *longe no array* causam:
-  - Evicção de linha de cache
-  - Recarga desnecessária (_cache miss_)
+  - Substituição de linha de cache
+  - _Cache miss_
   - Degradação de desempenho em MCUs
 
   #v(10pt)
@@ -614,17 +614,18 @@ $ "sujeito a:" quad y_i != y_j quad forall i != j $
   *Metodologia:*
   $ "Gap"(%) = frac(C_"SA" - C_"MILP", C_"MILP") times 100 $
 
-  18 instâncias verificadas ($n <= 12$, `solve_time < 250 s`)
+  18 instâncias ($n <= 12$, `solve_time < 250 s`)
 
   #v(10pt)
-  *Resultados:*
-  - *17/18* instâncias com gap = 0%
-  - 1 instância: gap = +4% (n=10, seed=1)
-  - avg gap = #hl[0,22%]
-  - max gap = #hl[4,00%]
+  *Legenda do gráfico:*
+  - #text(fill: rgb("#2166ac"))[*Azul*] — custo ótimo (MILP)
+  - #text(fill: rgb("#4dac26"))[*Verde*] — SA = ótimo
+  - #text(fill: rgb("#d6604d"))[*Vermelho*] — SA > ótimo
 
   #v(8pt)
-  Muito abaixo da #note[meta de 10%] definida no plano do projeto.
+  *Resultados:*
+  - *17/18* instâncias: SA = ótimo
+  - 1 instância (n=10, s=1): gap = #hl[+4%] (Δ=1)
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -682,11 +683,11 @@ $ "sujeito a:" quad y_i != y_j quad forall i != j $
 #grid(columns: (1fr, 1fr), gutter: 24pt)[
   *Contribuições:*
 
-  - *P1 — MILP:* formulação exata; ótimo em 0,19 s para $n=5$; 33% de redução vs. DFS
+  - *P1 — MILP:* formulação exata verificada; a solução esbarra num limite intratável próximo a $n approx 12$–$15$
 
-  - *P2 — Scaling:* muro exponencial empírico documentado em $n approx 12$–$15$
+  - *P2 — Scaling:* muro exponencial empírico documentado e caracterizado
 
-  - *P3 — SA:* $alpha = 0.995$ + init Fiedler; avg gap = 0,22% vs. MILP ótimo
+  - *P3 — SA:* inicialização espectral (Fiedler) + avg gap = 0,22% vs. ótimo MILP
 
   - *P4 — Validação:* emissor C funcional; build e testes passando com layout otimizado
 ][
@@ -694,11 +695,13 @@ $ "sujeito a:" quad y_i != y_j quad forall i != j $
 
   - MinLA é um *proxy* de localidade de cache — não minimiza diretamente cache misses
 
-  - Pesos $W_(i j)$ uniformes ($=1$); extensão natural: pesos guiados por profiling
+  - Pesos $W_(i j)$ uniformes ($= 1$); extensão natural: pesos guiados por profiling
 
-  - SA não escalonado para $n >> 200$ sem calibração adicional de $T_0$
+  - Não testado para árvores acima de *31 nós*; comportamento do SA para instâncias maiores permanece em aberto
 
-  - Potencial de melhoria: simetria breaking no MILP, heurísticas construtivas alternativas
+  - *Vizinhança por swap:* em alguns cenários, a geração de vizinhos por swap aleatório pode distanciar a busca de uma boa solução local quando já existe uma permutação interessante — operadores mais dirigidos (e.g., inserção, reversão de segmento) poderiam mitigar isso
+
+  - *Calibração de $T_0$:* a amostragem de 100 swaps pode sub-representar o espaço de busca em grafos grandes, levando a uma temperatura inicial imprecisa
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────

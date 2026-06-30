@@ -172,7 +172,8 @@ def fig_sa_sensitivity():
 # ══════════════════════════════════════════════════════════════════════════════
 def fig_optimality_gap():
     """
-    Data from report_p4_validation.typ — 18 verified instances (n<=12, seed4 excluded).
+    Grouped bar chart: MILP cost vs SA cost per instance.
+    Highlights the cost difference visually; annotates gap % where SA > MILP.
     """
     records = [
         # (label,      n, milp, sa,   dfs)
@@ -199,46 +200,69 @@ def fig_optimality_gap():
     labels = [r[0] for r in records]
     milp   = np.array([r[2] for r in records], dtype=float)
     sa     = np.array([r[3] for r in records], dtype=float)
-    dfs    = np.array([r[4] for r in records], dtype=float)
-
-    gap_sa  = (sa  - milp) / milp * 100
-    gap_dfs = (dfs - milp) / milp * 100
 
     x = np.arange(len(labels))
-    w = 0.35
+    w = 0.38
 
-    fig, ax = plt.subplots(figsize=(9, 4))
+    fig, ax = plt.subplots(figsize=(10, 4.5))
 
-    ax.bar(x - w/2, gap_dfs, w, label="DFS pré-ordem", color="#cccccc", edgecolor="white")
-    bars = ax.bar(x + w/2, gap_sa,  w, label="SA  (α=0.995)", color=BLUE,  edgecolor="white")
+    # MILP bars (reference — darker blue)
+    ax.bar(x - w/2, milp, w, label="MILP (ótimo)", color="#2166ac", edgecolor="white", zorder=3)
 
-    # highlight the one non-zero SA gap
-    for i, (bar, g) in enumerate(zip(bars, gap_sa)):
-        if g > 0:
-            bar.set_color(RED)
-            ax.text(bar.get_x() + bar.get_width()/2, g + 0.3,
-                    f"+{g:.0f}%", ha="center", va="bottom", fontsize=8, color=RED)
+    # SA bars — green where equal, orange/red where worse
+    sa_colors = []
+    for m, s in zip(milp, sa):
+        if s == m:
+            sa_colors.append("#4dac26")   # green = match
+        else:
+            sa_colors.append("#d6604d")   # red   = gap
 
-    # target line
-    ax.axhline(10, color=GRAY, linewidth=0.9, linestyle=":", label="Meta: gap < 10%")
+    sa_bars = ax.bar(x + w/2, sa, w, label="SA  (α=0.995)",
+                     color=sa_colors, edgecolor="white", zorder=3)
+
+    # Annotate the one instance where SA > MILP
+    for i, (bar, m, s) in enumerate(zip(sa_bars, milp, sa)):
+        if s > m:
+            gap_pct = (s - m) / m * 100
+            bx = bar.get_x() + bar.get_width() / 2
+            # bracket showing the extra cost
+            ax.annotate(
+                "",
+                xy=(bx, s), xytext=(bx, m),
+                arrowprops=dict(arrowstyle="<->", color=RED, lw=1.4),
+                zorder=5,
+            )
+            ax.text(bx + 0.22, (s + m) / 2, f"+{gap_pct:.0f}%\n(Δ={s-m:.0f})",
+                    ha="left", va="center", fontsize=8, color=RED, zorder=6)
+
+    # legend patch for "exact match"
+    import matplotlib.patches as mpatches
+    patch_match = mpatches.Patch(color="#4dac26", label="SA = ótimo (17/18)")
+    patch_gap   = mpatches.Patch(color=RED,       label="SA > ótimo (1/18)")
+    ax.legend(handles=[
+        mpatches.Patch(color="#2166ac", label="MILP (ótimo)"),
+        patch_match,
+        patch_gap,
+    ], frameon=False, fontsize=9)
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=40, ha="right", fontsize=8)
-    ax.set_ylabel("Gap vs. ótimo MILP (%)")
-    ax.set_ylim(0, None)
-    ax.legend(frameon=False, fontsize=9)
-    ax.grid(axis="y")
+    ax.set_ylabel("Custo MinLA")
+    ax.set_ylim(0, max(sa.max(), milp.max()) * 1.18)
+    ax.grid(axis="y", zorder=0)
 
-    # average annotation
+    # avg gap annotation
+    gap_sa = (sa - milp) / milp * 100
     avg = gap_sa.mean()
-    ax.text(0.98, 0.95, f"avg gap = {avg:.2f}%", transform=ax.transAxes,
-            ha="right", va="top", fontsize=10, color=BLUE)
+    ax.text(0.98, 0.97, f"avg gap = {avg:.2f}%", transform=ax.transAxes,
+            ha="right", va="top", fontsize=9, color=GRAY)
 
     fig.tight_layout()
     out = FIGS / "optimality_gap.png"
     fig.savefig(out)
     plt.close(fig)
     print(f"  ✓ {out}")
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
