@@ -28,8 +28,8 @@
     como referência de otimalidade. Segundo, uma meta-heurística de Simulated
     Annealing, inicializada pelo vetor de Fiedler do grafo LCRS para maximizar
     a localidade espacial desde o ponto de partida, é aplicada a instâncias de
-    tamanho real. O SA atinge gap médio de 0,22% em relação ao ótimo MILP, com
-    17 das 18 instâncias de benchmark alcançando o valor ótimo exato. Em uma
+    tamanho real. O SA atinge gap médio de 0,48% em relação ao ótimo MILP, com
+    23 das 25 instâncias de benchmark alcançando o valor ótimo exato. Em uma
     Behavior Tree real de 20 nós, o método reduz o custo MinLA em 25% em
     relação ao layout padrão gerado por DFS pré-ordem.
   ],
@@ -352,23 +352,31 @@ O gap de otimalidade entre SA e MILP é definido como:
 
 $ "Gap"(%) = (C_"SA" - C_"MILP") / C_"MILP" times 100 $ <eq:gap>
 
-O SA foi avaliado em 18 instâncias de BTs com $n <= 12$, para as quais o MILP
+O SA foi avaliado em 25 instâncias de BTs com $n <= 15$, para as quais o MILP
 encontrou a solução ótima dentro do limite de tempo. A @fig:gap apresenta os
 resultados individuais por instância.
 
 #figure(
-  image("../../figures/optimality_gap.png", width: 88%),
+  grid(
+    columns: (1fr,),
+    gutter: 10pt,
+    image("../../figures/optimality_gap_1.png", width: 92%),
+    image("../../figures/optimality_gap_2.png", width: 92%),
+  ),
   placement: top,
-  caption: [Gap de otimalidade do SA em relação ao MILP para 18 instâncias
-            com $n <= 12$. Instâncias em verde atingiram o ótimo exato;
-            a instância em vermelho apresentou desvio de 4%.],
+  caption: [Gap de otimalidade do SA em relação ao MILP para 25 instâncias
+            com $n <= 15$. (Superior) Instâncias com $n in {5, 8, 10}$.
+            (Inferior) Instâncias com $n in {12, 15}$. Instâncias em verde
+            atingiram o ótimo exato; instâncias em vermelho apresentaram desvio
+            (gap máximo de 7,1%).],
 ) <fig:gap>
 
-O SA com inicialização espectral atingiu o valor ótimo exato em 17 das 18
-instâncias (gap = 0%). A única instância com desvio, com $n = 10$, apresentou
-gap de 4%, correspondente a $Delta = 1$ unidade de custo. O gap médio sobre
-o conjunto completo foi de 0,22%, demonstrando que o SA opera praticamente no
-nível do ótimo para o horizonte de instâncias avaliado.
+O SA com inicialização espectral atingiu o valor ótimo exato em 23 das 25
+instâncias (gap = 0%). Apenas duas instâncias (ambas com $n=15$) apresentaram
+desvio: a primeira com gap de 4,8% ($Delta = 2$) e a segunda com gap de 7,1%
+($Delta = 3$). O gap médio sobre o conjunto completo foi de 0,48%, demonstrando
+que o SA opera praticamente no nível do ótimo para o horizonte de instâncias
+avaliado.
 
 
 == Aplicação em Behavior Tree Real
@@ -415,7 +423,7 @@ Annealing com inicialização espectral pelo vetor de Fiedler.
 O MILP garante a solução ótima para instâncias com $n <= 15$, mas torna-se
 intratável a partir de $n >= 20$ (utilizando o solver CPLEX_PY com limite de
 300~s por instância). O SA com inicialização espectral alcança gap médio de
-0,22% em relação ao ótimo, atingindo o valor exato em 17 das 18 instâncias
+0,48% em relação ao ótimo, atingindo o valor exato em 23 das 25 instâncias
 avaliadas. Aplicado à BT PortaAutomatica de 20 nós, o SA produz redução de
 25% no custo MinLA em comparação ao layout padrão DFS, sem alterar a semântica
 da árvore.

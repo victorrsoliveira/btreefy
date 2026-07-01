@@ -37,10 +37,10 @@ O conteúdo técnico e os resultados experimentais provêm exclusivamente de:
 |------|-------------|------------------|
 | **P1 — MILP** | Solver exato (PuLP/CBC → **CPLEX_PY em andamento**) | Custo ótimo = 8 (toy, 5 nós); 0,19 s; redução de 33% vs. DFS |
 | **P2 — Scaling** | Muro exponencial | CBC: intratável a partir de n ≈ 12–15. **CPLEX: barreira em n ≥ 20 (preliminar, aguardando conclusão)** |
-| **P3 — SA** | SA + init espectral; análise α | α=0.995 recomendado; gap 0% em 17/18; gap máx = 4%; avg_gap = 0,22% |
+| **P3 — SA** | SA + init espectral; análise α | α=0.995 recomendado; gap 0% em 23/25; gap máx = 7,14%; avg_gap = 0,48% |
 | **P4 — Validação** | Gap + emissor C | PortaAutomatica (n=20): DFS=95 → SA=71 (−25%); build e testes OK |
 
-> 🔄 **MILP CPLEX em execução (2026-07-01):** Experimento re-executado com `CPLEX_PY` como solver no PuLP. Resultado preliminar: barreira de intratabilidade ampliada para n ≥ 20 (vs. n ≥ 15 com CBC). Aguardar conclusão para atualizar Seção 5.1 e a tabela de gap (mais instâncias disponíveis com CPLEX).
+> ✅ **MILP CPLEX concluído (2026-07-01):** Experimento validou o avanço da fronteira de intratabilidade para n ≥ 20. O conjunto de instâncias ótimas conhecidas saltou de 18 (com CBC) para 25 (com CPLEX, todas as instâncias n ≤ 15). O artigo e as figuras foram integralmente atualizados com a amostra completa.
 
 > ⛔ **AssetTracking DESCARTADO:** Os dados do modelo AssetTracking estavam incorretos e não serão citados no artigo. A seção de aplicação real usa apenas PortaAutomatica.
 
