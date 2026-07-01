@@ -114,7 +114,7 @@ def solve(
 
     # ── Solve ─────────────────────────────────────────────────────────────
     solver = pulp.getSolver(
-        "PULP_CBC_CMD",
+        "CPLEX_PY",
         timeLimit=int(time_limit_s),
         msg=int(msg),
     )
