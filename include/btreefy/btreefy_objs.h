@@ -49,7 +49,7 @@ struct btf_tree
     uint32_t         size;
     void *           data;
     size_t           datalen;
-    uintptr_t        running_node_index;
+    uint32_t         running_node_index;
 };
 
 static inline void btf_tree_copy_data(struct btf_tree * tree, void * data, size_t datalen)

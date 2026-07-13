@@ -22,9 +22,8 @@
 #define BTF_ERROR_EINVAL -1
 #define BTF_ERROR_EXEC   -2
 
-#define BTF_NODE_ARRAY_INDEX(p_nodes, p_node)                     \
-    (uint32_t)((((uintptr_t) (p_node)) - ((uintptr_t) (p_nodes))) \
-               / (uintptr_t) sizeof(struct btf_node))
+#define BTF_NODE_ARRAY_INDEX(p_nodes, p_node) \
+    ((uint32_t)((p_node) - (p_nodes)))
 
 int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, uint32_t tree_size);
 

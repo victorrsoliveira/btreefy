@@ -99,10 +99,8 @@ int32_t btf_tick_tree(struct btf_tree *tree)
                 // Store the running node index
                 tree->running_node_index =
                     BTF_NODE_ARRAY_INDEX(tree->nodes, p_node);
-                // (((uintptr_t) p_node) - ((uintptr_t) tree->nodes))
-                // / (uintptr_t) sizeof(struct btf_node);
                 printf("Store RUNNING node [%u]\n",
-                       (uint32_t) tree->running_node_index);
+                       tree->running_node_index);
             }
         }
         else

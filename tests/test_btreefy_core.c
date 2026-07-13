@@ -73,7 +73,7 @@ void test_btf_init_should_initialize_tree(void)
     TEST_ASSERT_EQUAL_INT32(BTF_ERROR_OK, result);
     TEST_ASSERT_EQUAL_PTR(nodes, tree.nodes);
     TEST_ASSERT_EQUAL_UINT32(tree_size, tree.size);
-    TEST_ASSERT_EQUAL_UINT32(BTF_NULL_NODE, (uint32_t) tree.running_node_index);
+    TEST_ASSERT_EQUAL_UINT32(BTF_NULL_NODE, tree.running_node_index);
 
     result = btf_set_data(&tree, &blackboard, sizeof(blackboard));
 
