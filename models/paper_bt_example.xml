@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="Untitled">
+    <Fallback>
+      <Sequence>
+        <ScriptCondition code="new_position_requested"/>
+        <Fallback>
+          <Sequence>
+            <Script code="gnss_fix"/>
+            <Script code="send_position"/>
+          </Sequence>
+          <Script code="no_position_alert"/>
+        </Fallback>
+      </Sequence>
+      <Script code="sleep"/>
+    </Fallback>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel/>
+
+</root>

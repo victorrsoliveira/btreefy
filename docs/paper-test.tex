@@ -1,0 +1,145 @@
+\documentclass[conference]{IEEEtran}
+
+% --- Language and Encoding ---
+\usepackage[T1]{fontenc}        % Suporte para acentuação e fontes de 8 bits
+\usepackage[utf8]{inputenc}     % Codificação de caracteres moderna
+\usepackage[brazil]{babel}      % Tradução de termos e hifenização em português
+
+% --- TikZ Setup (For Diagrams) ---
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta}
+
+% Configurando estilos do TikZ para a árvore de comportamento
+\tikzset{
+    control/.style={rectangle, draw, fill=gray!15, minimum width=2.8cm, minimum height=0.8cm, font=\normalsize\bfseries},
+    action/.style={rectangle, draw, fill=blue!10, rounded corners=3pt, minimum width=2.8cm, minimum height=0.8cm, font=\scriptsize\ttfamily},
+    condition/.style={rectangle, draw, fill=green!10, rounded corners=3pt, minimum width=2.8cm, minimum height=0.8cm, font=\scriptsize\ttfamily}
+}
+
+% --- Algorithm Setup (For Pseudocode) ---
+\usepackage{amsmath}
+\usepackage[linesnumbered,lined,titlenumbered,ruled,noend]{algorithm2e}
+
+% Redefine comment delimiters to match the reference: /* ... */
+\SetCommentSty{texttt}
+\SetKwComment{Comment}{/* }{*/}
+
+\begin{document}
+
+% --- Title and Authors ---
+\title{Título do Artigo Científico para a IEEE}
+
+\author{
+    \IEEEauthorblockN{Nome do Autor 1}
+    \IEEEauthorblockA{Departamento de Computação\\
+    Universidade Exemplo (UE)\\
+    Cidade, Estado\\
+    Email: autor1@exemplo.com}
+    \and
+    \IEEEauthorblockN{Nome do Autor 2}
+    \IEEEauthorblockA{Departamento de Elétrica\\
+    Universidade Exemplo (UE)\\
+    Cidade, Estado\\
+    Email: autor2@exemplo.com}
+}
+
+\maketitle
+
+% --- Abstract ---
+\begin{abstract}
+Este resumo deve descrever brevemente o objetivo do seu artigo da IEEE, a metodologia utilizada, os resultados obtidos e as conclusões principais. O documento foi estruturado especificamente para aceitar a escrita nativa em língua portuguesa e renderizar gráficos utilizando a biblioteca TikZ.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Computação, LaTeX, Diagramas TikZ, IEEEtran.
+\end{IEEEkeywords}
+
+% --- Sections ---
+\section{Introdução}
+Esta é a seção de introdução. Note que a acentuação funciona nativamente (por exemplo: acentuação, coração, computação) graças aos pacotes configurados. 
+
+\section{Metodologia}
+Abaixo, apresentamos o diagrama da árvore de comportamento do sistema, modelada no Groot 2 e representada em vetor pelo TikZ.
+
+\begin{figure}[!ht]
+    \centering
+    % Início do ambiente da árvore TikZ
+    \begin{tikzpicture}[
+        sibling distance=3cm,
+        level distance=1.5cm,
+        every node/.style={align=center},
+        edge from parent/.style={draw, -Latex, thick}
+    ]
+        \node [control] {?}
+            child {node [control] {$\rightarrow$}
+                child {node [condition] {New position \\ requested}}
+                child {node [control] {?}
+                    child {node [control] {$\rightarrow$}
+                        child {node [action] {GNSS \\ fix}}
+                        child {node [action] {Send \\ position}}
+                    }
+                    child {node [action] {No position \\ alert}}
+                }
+            }
+            child {node [action] {Sleep}};
+    \end{tikzpicture}
+    \caption{Árvore de comportamento equivalente obtida do arquivo XML.}
+    \label{fig:diagrama_exemplo}
+\end{figure}
+
+Como observado na Fig. \ref{fig:diagrama_exemplo}, a árvore de comportamento é compilada sem distorções no PDF final.
+
+\subsection{Behavior Tree Tick Algorithm}
+The tick process traverses the tree iteratively using a DFS approach over the LCRS (Left-Child Right-Sibling) representation, as shown in Algorithm~\ref{alg:btf_tick_tree}.
+
+\begin{algorithm}[!ht]
+\caption{Behavior Tree Tick}
+\label{alg:btf_tick_tree}
+\SetAlgoLined
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwFunction{FRoot}{root}
+\SetKwFunction{FAction}{action}
+\SetKwFunction{FFirstChild}{first\_child}
+\SetKwFunction{FControl}{control}
+\SetKwFunction{FNextSib}{next\_sibling}
+\SetKw{KwAnd}{and}
+\SetKw{KwNot}{not}
+\Input{Behavior tree with LCRS node representation}
+\Output{Final status of the root node}
+$node \leftarrow \FRoot{tree}$\;
+$status \leftarrow \text{UNDEFINED}$\;
+\While{\KwNot ($status$ is defined \KwAnd $node$ is root)}{
+    \eIf{$status = \text{UNDEFINED}$}{
+        \eIf{$node$ is a leaf}{
+            $status \leftarrow node.\FAction{tree}$\;
+            \If{$status = \text{RUNNING}$}{
+                store $node$ as $running\_node$\;
+            }
+        }{
+            $node \leftarrow \FFirstChild{node}$\;
+        }
+    }{
+        $parent \leftarrow node.parent$\;
+        $result \leftarrow parent.\FControl{tree, node, status}$\;
+        \eIf{$result = \text{CONTINUE}$}{
+            \eIf{$node$ has sibling}{
+                $node \leftarrow \FNextSib{node}$\;
+                $status \leftarrow \text{UNDEFINED}$\;
+            }{
+                $node.parent.status \leftarrow status$\;
+                $node \leftarrow node.parent$\;
+            }
+        }{
+            $node.parent.status \leftarrow status$\;
+            $node \leftarrow node.parent$\;
+        }
+    }
+}
+\Return{$status$}\;
+\end{algorithm}
+
+\section{Conclus\~ao}
+Seu ambiente está pronto para produzir documentos acadêmicos robustos e compatíveis com as normas da IEEE.
+
+\end{document}
