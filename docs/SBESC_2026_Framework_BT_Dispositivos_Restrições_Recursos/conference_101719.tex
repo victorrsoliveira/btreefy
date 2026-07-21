@@ -1,0 +1,247 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage[T1]{fontenc}        % Suporte para acentuação
+\usepackage[utf8]{inputenc}     % Codificação de caracteres moderna (opcional em editores atuais)
+\usepackage[brazil]{babel}      % Tradução geral do documento para o português
+\usepackage{amsmath}
+\usepackage[linesnumbered,lined,titlenumbered,ruled,noend]{algorithm2e}
+
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+\usepackage{listings}
+\lstset{
+    backgroundcolor=\color{gray!5},
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{orange},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+\renewcommand{\lstlistingname}{Listagem}
+%\renewcommand{\lstlistlistingname}{Lista de Listagens}
+
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{BTreeFy: um \textit{framework} de \textit{Behavior Trees} para Sistemas Embarcados com Recursos Restritos}
+
+\author{\IEEEauthorblockN{Victor R. S. de Oliveira}
+\IEEEauthorblockA{\textit{Instituto de Computação} \\
+\textit{Universidade Federal de Alagoas}\\
+Maceió, Brasil \\
+vrso@ic.ufal.br}
+\and
+\IEEEauthorblockN{Bruno Nogueira}
+\IEEEauthorblockA{\textit{Instituto de Computação} \\
+\textit{Universidade Federal de Alagoas}\\
+Maceió, Brasil \\
+bruno@ic.ufal.br}
+\and
+\IEEEauthorblockN{Alfredo Lima}
+\IEEEauthorblockA{\textit{<Departamento ABC>} \\
+\textit{<Organização XYZ>}\\
+<Cidade da Organização>, <País da Organização> \\
+<alfredolimams@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Em aplicações de Sistemas Embarcados, o uso de máquinas de estados finitos é bastante comum devido à sua facilidade de uso e ampla utilização. No entanto, para a descrição de sistemas mais complexos, as máquinas de estados possuem algumas limitações com relação a modularidade, reatividade e legibilidade do modelo. Como alternativa, \textit{Behavior Trees} foram concebidas para superar essas limitações. Ao longo dos últimos anos, \textit{Behavior Trees} tem sido utilizadas em aplicações nas áreas como Robótica, IA e Sistemas de Controle Industrial, mas ainda são pouco exploradas em aplicações na área de Sistemas Embarcados, especificamente em aplicações com restrição de recursos computacionais. Para preencher esta lacuna, este trabalho apresenta o \textbf{BTreeFy}, um \textit{framework} de \textit{Behavior Tree} para Sistemas Embarcados com Recursos Restritos. O \textit{framework} proposto implementa um motor de execução de forma iterativa, utiliza representação \textit{left-child right-sibling} para construção da árvore, disponibiliza ferramenta para geração de código a partir do editor \textit{Groot 2}, além de permitir alta integração e portabilidade devido a sua implementação em ANSI C. Para validação do uso do \textit{framework}, este trabalho apresenta um estudo de caso de uma aplicação de um sensor vestível para aquisição de movimentos do corpo humano. [ADICIONAR RESULTADOS DO ESTUDO DE CASO]
+\end{abstract}
+
+\begin{IEEEkeywords}
+Sistemas Embarcados, \textit{Behavior Trees}, C, \textit{framework}, \textit{left-child right-sibling}
+\end{IEEEkeywords}
+
+\section{Introdução}
+
+A modelagem de comportamento em Sistemas Embarcados adota tradicionalmente o formalismo de Máquinas de Estados Finitos (FSMs) como o método mais comum de controle. O uso desse modelo pode ser associado à sua facilidade inicial de compreensão, ao seu histórico de aplicação na indústria e à sua presença nos currículos de engenharia e de ciência da computação. Como o projeto de firmware muitas vezes requer a gestão de estados e interrupções, as FSMs costumam surgir como uma escolha natural para a modelagem da lógica de controle. Entretanto, à medida que a complexidade dos sistemas embarcados aumenta, as características arquitetônicas das FSMs podem apresentar desafios de escalabilidade e manutenção. O modelo de Máquina de Estados é basicamente um grafo dirigido onde os nós são os estados e as arestas são as transições, as quais são responsáveis por conectar os estados entre si e normalmente representam condições ou a ocorrência de eventos em um sistema. Devido a essa topologia, a adição ou remoção de estados exige a reavaliação de um número potencialmente grande de transições e estados internos do modelo. FSMs com muitos estados e transições são difíceis de modificar, o que impõe barreiras severas à escalabilidade.  
+Além do impacto na manutenibilidade, podem surgir desafios do ponto de vista de modularidade. Como as transições frequentemente dependem dos estados e de suas variáveis internas, o uso de extensões hierárquicas (HFSMs) pode atenuar essa deficiência, mas não a soluciona por completo. Consequentemente, o reúso de lógicas de controle entre diferentes projetos ou módulos torna-se uma tarefa mais complexa e propensa a erros, motivando a investigação de abordagens arquitetônicas alternativas para a orquestração de execução em firmware.
+
+\textit{Behavior Trees} (BTs) são um formalismo de controle que se tornou bastante popular em aplicações de robótica e IA nos últimos anos. Originalmente, \textit{Behavior Trees} foram projetadas para superar limitações encontradas no desenvolvimento de inteligência artificial para personagens de jogos digitais utilizando Máquinas de Estado Finitas (MEF), por permitirem maior modularidade e reatividade. Ao longo dos anos, no entanto, tem-se observado uma crescente utilização de BTs em diversas áreas, como a robótica, sistemas autônomos, IA e controle industrial. Apesar do uso extensivo em diversas áreas, a aplicação de BTs em Sistemas Embarcados com Recursos Restritos tem sido pouco investigada, e não se encontram trabalhos na literatura que explorem o uso desse formalismo diante das restrições específicas de aplicações dessa área.
+
+Um dos motivos possíveis pelos quais BTs não têm sido exploradas na área de Sistemas Embarcados com Recursos Restritos é a falta de bibliotecas ou \textit{frameworks} que possam ser integrados ao ambiente de desenvolvimento destas aplicações. O trabalho \cite{iovino_survey_2022} apresenta uma lista de bibliotecas de BTs disponíveis até o momento do estudo implementadas em diferentes linguagens de programação como Python, Java, C\#, C++ e JavaScript. No entanto, ambientes de desenvolvimento para Sistemas Embarcados com Recursos Restritos normalmente têm suas aplicações desenvolvidas em C. Desta maneira, a utilização direta destas bibliotecas se torna impeditiva.
+
+[A FAZER] Comentar também sobre a modelagem da árvore utilizando a abordagem \textit{Left-Child Right-Sibling} como uma maneira mais eficiente para implementar em Sistemas Embarcados com Recursos Restritos, uma vez que não é necessário que um nó da árvore conheça todos os seus filhos, limitando-se apenas a conhecer o seu filho mais à esquerda e o nó irmão na estrutura da árvore.
+
+[Contextualizar a área de Sistemas Embarcados com Recursos Restritos]
+
+Com o intuito de preencher essa lacuna, este trabalho propõe um \textit{framework} de \textit{Behavior Trees} para Sistemas Embarcados com Recursos Restritos, chamado \textbf{BTreeFy}. O desenvolvimento deste \textit{framework} tem por objetivo atender às demandas específicas das aplicações de Sistemas Embarcados Com Recursos Restritos. Desta maneira, as principais contribuições deste trabalho são: (i) a implementação de um \textit{framework} funcional que permite o desenvolvimento na linguagem C de aplicações de Sistemas Embarcados com Recursos Restritos usando \textit{Behavior Trees}; (ii) uma ferramenta de geração de código automático a partir do editor visual \textit{Groot 2}; (iii) uma representação de Behavior Tree utilizando a abordagem \textit{left-child right-sibling}; (iv) uma implementação iterativa.
+
+% 1. Uma adaptação para utilização de BTs em sistemas embarcados
+% 2. Framework (API + geração de código)
+% 3. Estudo de caso
+
+\section{Fundamentos em Behavior Trees}
+
+\textit{Behavior Trees} são um formalismo de controle utilizado para descrever tarefas em agentes ou sistemas e foram desenvolvidos com o intuito de superar algumas limitações das Máquinas de Estados Finitos com relação a reatividade, modularidade e legibilidade. Conceitualmente, uma \textit{Behavior Tree} é uma árvore cujos nós intermediários são chamados de \textit{nós de controle de fluxo} e os nós folha são chamados de \textit{nós de execução}. Os \textit{nós de controle de fluxo} têm a função de implementar uma política que determina qual o próximo nó a ser executado, enquanto os \textit{nós de execução} implementam verificações de condições ou ações do sistema. Quando uma condição ou ação é executada, o nó pode retornar três valores de \textit{status} possíveis: \textit{Failure}, \textit{Success} ou \textit{Running}. Os valores de \textit{Failure} e \textit{Success} indicam, respectivamente, uma falha ou um sucesso na execução do nó, enquanto o valor \textit{Running} indica que o nó ainda não concluiu sua execução e será reexecutado em seguida.
+
+\subsection{Nós de controle de fluxo}
+
+Considerando a formulação clássica apresentada em \cite{colledanchise_behavior_2018}, uma \textit{Behavior Tree} pode possuir os seguintes tipos de \textit{nós de controle de fluxo}: \textit{Sequence}, \textit{Fallback}, \textit{Parallel} e \textit{Decorator}. Cada um desses nós, quando executado, realiza a execução dos seus respectivos filhos (ou do filho, no caso do \textit{Decorator}).
+
+%Em sua formulação clássica, de acordo com \ref{colledanchise_behavior_2018}, os \textit{nós de controle de fluxo} básicos em uma \textit{Behavior Tree} são: \textit{Sequence}, \textit{Fallback} e \textit{Parallel}. 
+
+Quando um nó \textit{Sequence} é executado, ele executa seus respectivos filhos, em sequência da esquerda para a direita, até que um deles retorne \textit{Failure} ou \textit{Running}, em que, nesta situação, a execução retorna o valor resultante ao seu respectivo nó pai. Assim, o nó \textit{Sequence} apenas retorna \textit{Success} se todos os seus filhos retornarem \textit{Success}. 
+
+De forma semelhante, o nó \textit{Fallback}, quando executado, realiza a execução dos seus filhos, da esquerda para a direita, até que um deles retorne \textit{Success} ou \textit{Running}, e então, sua execução retorna para seu respectivo nó pai. Assim, o nó \textit{Fallback} só retorna \textit{Failure} se todos os seus filhos também retornarem \textit{Failure}.
+
+O nó \textit{Parallel}, por sua vez, também executa seus nós filhos da esquerda para a direita, mas sua execução só resulta em \textit{Success} se \texttt{M} nós filhos retornarem \textit{Success}. Caso contrário, retorna \textit{Failure}.
+
+Por fim, o nó \textit{Decorator} é um tipo de nó que aceita apenas um filho. O comportamento de um nó \textit{Decorator} é definido através de uma regra personalizada pelo usuário. No entanto, existem comportamentos comuns pré-definidos normalmente encontrados em implementações de \textit{Behavior Tree} como o \textit{Decorator} de \textit{inversão}, que inverte o valor retornado de um nó filho de \textit{Failure} para \textit{Sucesso} ou \textit{vice-versa}, além de outros comportamentos como o \textit{Decorator} de execução \textit{máxima de N tentativas} ou \textit{repetição enquanto Success}, cujos nomes são autoexplicativos.
+
+\subsection{Nós de execução}
+
+Os nós que não possuem filhos ou folhas de uma árvore são considerados nós de execução em uma \textit{Behavior Tree}. Esses nós podem representar dois tipos de execução: \textit{condição} ou \textit{ação}. A diferença entre esses tipos de nós é apenas conceitual. O \textit{nó de condição} indica a execução de verificação de uma condição, e sua execução pode retornar apenas os valores \textit{Failure} ou \textit{Success}. Já o \textit{nó de ação} indica a execução de uma ação ou tarefa e sua execução pode retornar \textit{Failure}, \textit{Success} ou \textit{Running}.
+
+\subsection{Execução de uma Behavior Tree}
+
+A execução de uma \textit{Behavior Tree} é baseada na propagação de um sinal comumente chamado \textit{tick}, que determina a execução de um nó. A propagação do \textit{tick} é iniciada a partir da raiz da árvore e percorre todos os nós da árvore seguindo a ordem do nó filho mais à esquerda, até que um nó folha seja atingido. Quando um nó folha é atingido, seu valor de \textit{status} é retornado ao seu respectivo nó pai. Neste momento, o nó pai executa sua função de política para determinar qual o próximo nó a ser executado. A depender desta decisão, o próximo nó a ser executado pode ser um nó filho à direita, ou a execução pode retornar para o nó acima, em direção à raiz da árvore. Este processo de propagação do \textit{tick} pelos nós da árvore permanece até que o nó raiz seja avaliado e não haja mais nós a serem executados.
+
+\begin{figure}[ht]
+    \centering % Centers the image
+    \includegraphics[width=0.5\textwidth]{imgs/fsm_example.pdf} % Adjust size and add filename
+    \caption{Máquina de estados de uma aplicação de rastreamento.} % The visual text caption
+    \label{fig:fsm_example} % The key used to reference this image in text
+\end{figure}
+
+Como exemplo didático de execução de uma \textit{Behavior Tree}, vamos considerar a aplicação de um dispositivo rastreador, conforme ilustrado na máquina de estados da figura \ref{fig:fsm_example}. Neste primeiro momento, vamos considerar apenas a parte destacada pela área em fundo cinza. Inicialmente, o dispositivo inicia-se no estado \texttt{Sleep}, que representa um modo de baixo consumo de energia. Quando ocorre o evento de nova aquisição de posicionamento \texttt{new position requested}, o dispositivo vai para o estado \texttt{GNSS fix} para executar a aquisição de posicionamento pelo módulo GNSS (\textit{Global Navigation Satellite System}. Caso o \textit{fix} ocorra com sucesso, o dispositivo para vai o estado \texttt{Send position} para transmissão da nova posição geográfica, e, por fim, volta a dormir em caso de sucesso da transmissão. Caso o dispositivo falhe na aquisição de posição pelo módulo GNSS ou na transmissão desta informação, o dispositivo vai para o estado \texttt{Register positioning failure} para registrar a ocorrência da falha e volta para o estado \texttt{Sleep}.
+
+A \textit{Behavior Tree} que representa a modelagem da mesma aplicação citada anteriormente é apresentada na figura \ref{fig:bt_example}. De forma semelhante, vamos considerar apenas a parte do modelo destacada pela área em fundo cinza. A execução da árvore se inicia a partir do nó \textit{Fallback} na raiz e percorre os nós da árvore executando os filhos mais à esquerda até atingir o nó de condição \textit{New position requested}. Ao ser executado, este nó de condição pode retornar \textit{Failure} ou \textit{Success}. Caso esse nó retorne \textit{Failure}, ele retorna a execução e seu \textit{status} para o nó pai \textit{Sequence} logo acima, que avalia o valor a partir de sua função de política de controle e decide retornar para o nó pai \textit{Fallback}, atingindo a raiz da árvore. Ao receber o \textit{status} \textit{Failure}, o nó raiz \textit{Fallback} decide executar seu próximo nó filho \textit{Sleep}. Esta execução representa a operação em modo de baixo consumo da aplicação. Caso a execução do nó \textit{New position requested} retorne o \textit{status} \textit{Success}, o seu nó pai \textit{Sequence} decidirá, neste momento, executar seu próximo nó filho \textit{Fallback}. Em consequência, o \textit{tick} da árvore será propagado novamente para os nós filho à esquerda e, eventualmente, o nó \textit{GNSS fix} será atingido. Caso seu valor de retorno seja \textit{Success}, o nó \textit{Send position} será executado. A partir da árvore é possível verificar que o nó \textit{Register positioning failure} só será executado caso o nó \textit{GNSS fix} ou \textit{Send position} retorne \textit{Failure}. Desta maneira, nota-se que a árvore executa de forma semelhante à máquina de estados apresentada na figura \ref{fig:fsm_example}. 
+
+% 2. Insert the figure environment where you want it
+\begin{figure}[ht]
+    \centering % Centers the image
+    \includegraphics[width=0.5\textwidth]{imgs/bt_example.pdf} % Adjust size and add filename
+    \caption{Exemplo de \textit{Behavior Tree} numa aplicação de rastreamento.} % The visual text caption
+    \label{fig:bt_example} % The key used to reference this image in text
+\end{figure}
+
+\subsection{Modularidade e reatividade em \textit{Behavior Trees}}
+
+Para verificarmos o poder de abstração de uma \textit{Behavior Tree}, vamos estender a aplicação apresentada anteriormente adicionando uma nova funcionalidade que detecta quando o dispositivo rastreador é violado, representada pelo estado \texttt{Send tamper alert} e pelas transições \texttt{tamper detected}, conforme está ilustrado na figura \ref{fig:fsm_example}. Desta maneira, toda vez que o dispositivo detectar uma violação, como a abertura do seu invólucro ou caixa, ele deve enviar um alerta de violação continuamente até a indicação de violação ser interrompida. Como a detecção de violação deve operar a qualquer momento de funcionamento do dispositivo, a transição \texttt{tamper detected} deve partir de qualquer estado possível do sistema. Assim, para realizar a funcionalidade como esperado, a adição do estado \texttt{Send tamper alert} requer a adição de mais cinco transições \texttt{tamper detected}, uma para cada estado pré-existente no modelo e outra transição com origem e destino no próprio estado \texttt{Send tamper alert}. Por fim, a transição \texttt{end of tamper} foi adicionada de forma ilustrativa para indicar a interrupção do evento de violação e a ida para o modo de baixo consumo de energia.
+
+Em contrapartida, a adição desta funcionalidade no modelo da \textit{Behavior Tree} requer apenas a inclusão de uma nova ramificação a partir do nó raiz \textit{Fallback}, conforme pode ser verificado na figura \ref{fig:bt_example}. Esta nova ramificação consiste em um nó \textit{Sequence} seguido pelos nós de condição e execução, \textit{Tamper detected} e \textit{Send tamper alert}, respectivamente. Nesta versão estendida do modelo em \textit{Behavior Tree}, observa-se uma vantagem quando comparada ao modelo de máquina de estados: a modularidade. Enquanto a adição da nova funcionalidade resultou na adição de várias transições no modelo de máquina de estados, na \textit{Behavior Tree} apenas uma nova ramificação foi adicionada. A alteração do modelo em máquina de estados se torna visualmente mais complexa, mas, além disso, a adição de várias transições entre os estados pré-existentes e o novo estado adicionado exige a alteração dos próprios estados em si. Já no modelo em \textit{Behavior Tree}, a adição da nova ramificação apenas alterou o nó raiz \textit{Fallback}. 
+
+Outra característica a ser destacada no modelo de \textit{Behavior Tree} é sua capacidade de reatividade, inerente na própria execução da árvore. Vamos considerar que o dispositivo rastreador não está em violação (o nó \textit{Tamper detected} retorna \textit{FAILURE}) e que o nó \textit{GNSS fix} está retornando o \textit{status} \textit{RUNNING}, indicando que esta ação requer um intervalo de tempo para ser concluída. Neste cenário, ao retornar \textit{RUNNING}, a árvore não avança sua execução e verifica continuamente o resultado da ação \textit{GNSS fix}, mas também verifica todos os nós à esquerda do nó em execução para avaliar se o contexto permanece o mesmo. Caso ocorra uma detecção de violação, alterando o \textit{status} do nó \textit{Tamper detected} para \textit{SUCCESS}, a árvore automaticamente começa a executar a nova ramificação habilitada (nós \textit{Sequence}, \textit{Tamper detected} e \textit{Send tamper alert}) e interrompe a execução do nó \textit{GNSS fix}. Assim, é possível verificar a reatividade natural da \textit{Behavior Tree} quando ocorre uma alteração no contexto atual de execução sem que haja a necessidade dos nós terem conhecimento desta alteração.
+
+\section{Framework Proposto}
+
+ADICIONAR CENÁRIO DE USO DEMONSTRANDO O USO DO FRAMEWORK
+% Desenha BT, gera código, 
+
+Como proposta deste trabalho, apresentamos o \textbf{BTreeFy}, um \textit{framework} de \textit{Behavior Tree} para Sistemas Embarcados com Recursos Restritos. O principal objetivo para o desenvolvimento deste \textit{framework} é permitir a execução de \textit{Behavior Trees} em ambientes com recursos computacionais restritos. Para este fim, o projeto deste \textit{framework} considerou princípios e características necessários para que esse objetivo fosse atingido.
+As principais características do projeto deste \textit{framework} e suas justificativas são listadas a seguir:
+
+
+\paragraph{\textbf{Execução iterativa}} diferentemente de outras implementações que utilizam chamadas recursivas para execução dos nós da árvore, nossa proposta utiliza uma abordagem iterativa. Em uma abordagem recursiva, o processador precisa empilhar o contexto de execução atual, e em uma estrutura de árvore muito profunda isso resultaria em consumo excessivo de memória para plataformas com recursos de memória RAM muito restritos.
+
+% \begin{itemize} % Lista de características do BTreeFy - Início
+
+\paragraph{\textbf{Representação LCRS}} para facilitar a definição da estrutura de dados de um nó da \textit{Behavior Tree} foi utilizada a representação \textit{left-child right-sibling} para construção da estrutura da árvore. Nessa representação, um nó precisa apenas referenciar dois nós: seu nó filho mais à esquerda e o seu irmão, que é o nó imediatamente à sua direita, conforme pode ser observado na figura [ADICIONAR FIGURA].
+
+\paragraph{\textbf{Implementação puramente em ANSI C}} a implementação do \textit{framework} em ANSI C e ausência de dependências externas possibilitam uma maior integração e portabilidade. Desta maneira, o \textit{framework} pode ser usado em aplicações \textit{bare metal} como também em ambientes com Sistemas Operacionais de Tempo Real como o \textit{FreeRTOS} e \textit{Zephyr RTOS}.
+
+\paragraph{\textbf{Geração de código}} o projeto deste \textit{framework} disponibiliza um \textit{script} utilitário de geração de código que interpreta um arquivo XML produzido através do editor \textit{Groot 2} e gera os arquivos fonte na linguagem com a representação da árvore e as assinaturas das funções de ação dos nós folha da \textit{Behavior Tree}.
+
+% \end{itemize} % Lista de características do BTreeFy - Fim
+
+\subsection{Modelagem do nó e da árvore no BTreeFy}
+
+Na implementação do \textit{BTreeFy}, os objetos básicos são o nó e a árvore. Na definição do nó (ver listagem \ref{lst:btf_node}), o campo \texttt{status} é utilizado para armazenar o estado de execução do nó durante o processamento da árvore. Esse campo pode assumir os valores \texttt{FAILURE}, \texttt{SUCCESS} e \texttt{RUNNING}, semelhante à execução de uma \textit{Behavior Tree}. Os campos \texttt{child} e \texttt{sibling} armazenam os índices das referências dos nós filho e irmão do nó, indicando a estrutura \textit{left-child right-sibling}. A referência do nó pai através do campo \texttt{parent} é usada para navegar em direção à raiz da árvore. Na execução de uma \textit{Behavior Tree}, é necessário voltar aos nós pais após a execução de um nó para avaliar qual decisão será realizada de acordo com a política do nó de controle em questão. Por fim, o campo \texttt{handler\_fn} armazena um ponteiro para função que pode representar uma função de política de um nó de controle ou uma função de ação de um nó folha. A escolha de definir o campo \texttt{handler\_fn} como \texttt{void *} é devido à possibilidade deste campo poder receber um ponteiro para função de tipos diferentes, já que o protótipo de uma função de política é diferente do protótipo da função de uma ação, como será visto em seções adiante.
+
+\begin{lstlisting}[language=C, caption={Definição do objeto nó no \textit{BTreeFy}}, label={lst:btf_node}]
+struct btf_node
+{
+    enum btf_node_status status;
+    uint32_t             parent;
+    uint32_t             child;
+    uint32_t             sibling;
+    void                 *handler_fn;
+};
+\end{lstlisting}
+
+A definição da definição da árvore no \textbf{BTreeFy} é apresentada na listagem \ref{lst:btf_tree}. O campo \texttt{nodes} armazena o \textit{array} de nós da árvore e o campo \texttt{size} indica a quantidade de nós deste \textit{array}, e consequentemente, o tamanho da árvore. Também, a árvore pode armazenar um dado do usuário através do ponteiro no campo \texttt{data} e seu tamanho em \texttt{datalen}. Este dado de usuário associado à árvore pode ser acessado nas funções de ação dos nós folha implementadas pelo usuário, permitindo que os nós troquem dados entre si. Por fim, o campo \texttt{running\_node\_index} armazena o índice do nó que está em execução ou estado de \texttt{RUNNING} no momento. É através desta referência que o \texttt{framework} consegue abortar um nó em execução, caso a ramificação da árvore na qual ele se encontra não seja mais alcançável na execução atual.
+
+\begin{lstlisting}[language=C, caption={Definição do objeto árvore no \textit{BTreeFy}}, label={lst:btf_tree}]
+struct btf_tree
+{
+    struct btf_node *nodes;
+    uint32_t         size;
+    void *           data;
+    size_t           datalen;
+    uint32_t         running_node_index;
+};
+\end{lstlisting}
+
+\subsection{Algoritmo de execução da árvore no BTreeFy}
+
+O \texttt{tick} ou execução da árvore é realizado de acordo com o pseudocódigo apresentado no algoritmo \ref{alg:btf_tick_tree}.
+
+\begin{algorithm}[!ht]
+\caption{Função de \textit{tick} da árvore}
+\label{alg:btf_tick_tree}
+\SetAlgoLined
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwFunction{FRoot}{root}
+\SetKwFunction{FAction}{action}
+\SetKwFunction{FFirstChild}{first\_child}
+\SetKwFunction{FControl}{control}
+\SetKwFunction{FNextSib}{next\_sibling}
+\SetKw{KwAnd}{and}
+\SetKw{KwNot}{not}
+\Input{Referência de uma árvore}
+\Output{\textit{Status} da execução da árvore}
+$node \leftarrow \FRoot{tree}$\;
+$status \leftarrow \text{UNDEFINED}$\;
+\While{\KwNot ($status$ is defined \KwAnd $node$ is root)}{
+    \eIf{$status = \text{UNDEFINED}$}{
+        \eIf{$node$ is a leaf}{
+            $status \leftarrow node.\FAction{tree}$\;
+            \If{$status = \text{RUNNING}$}{
+                store $node$ as $running\_node$\;
+            }
+        }{
+            $node \leftarrow \FFirstChild{node}$\;
+        }
+    }{
+        $parent \leftarrow node.parent$\;
+        $result \leftarrow parent.\FControl{tree, node, status}$\;
+        \eIf{$result = \text{CONTINUE}$}{
+            \eIf{$node$ has sibling}{
+                $node \leftarrow \FNextSib{node}$\;
+                $status \leftarrow \text{UNDEFINED}$\;
+            }{
+                $node.parent.status \leftarrow status$\;
+                $node \leftarrow node.parent$\;
+            }
+        }{
+            $node.parent.status \leftarrow status$\;
+            $node \leftarrow node.parent$\;
+        }
+    }
+}
+\Return{$status$}\;
+\end{algorithm}
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{sbesc26-refs}
+
+\end{document}

@@ -1,0 +1,16 @@
+# Arquivos gerados na compilação do LaTeX
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.pdf
+*.toc
+*.lof
+*.lot
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
+# Pasta de artefatos do assistente
+.gemini/
