@@ -15,7 +15,16 @@
 #include <stdint.h>
 #include <string.h>
 
-#define BTF_NULL_NODE 0xFFFFFFFF
+#if defined(CONFIG_BTREEFY_NODE_INDEX_16BIT)
+typedef uint16_t btf_node_index_t;
+#define BTF_NULL_NODE ((btf_node_index_t)0xFFFF)
+#elif defined(CONFIG_BTREEFY_NODE_INDEX_32BIT)
+typedef uint32_t btf_node_index_t;
+#define BTF_NULL_NODE ((btf_node_index_t)0xFFFFFFFF)
+#else
+typedef uint8_t btf_node_index_t;
+#define BTF_NULL_NODE ((btf_node_index_t)0xFF)
+#endif
 
 /**
  * @brief Node status enumeration
@@ -46,10 +55,10 @@ struct btf_node;
 struct btf_tree
 {
     struct btf_node *nodes;
-    uint32_t         size;
+    size_t           size;
     void *           data;
     size_t           datalen;
-    uintptr_t        running_node_index;
+    btf_node_index_t running_node_index;
 };
 
 static inline void btf_tree_copy_data(struct btf_tree * tree, void * data, size_t datalen)
@@ -69,9 +78,9 @@ typedef enum btf_node_execution_result (*btf_control_fn_t)(
 struct btf_node
 {
     enum btf_node_status status;
-    uint32_t          parent;
-    uint32_t          child;
-    uint32_t          sibling;
+    btf_node_index_t  parent;
+    btf_node_index_t  child;
+    btf_node_index_t  sibling;
     void             *handler_fn;
     char *name;
 };

@@ -26,7 +26,7 @@
     (uint32_t)((((uintptr_t) (p_node)) - ((uintptr_t) (p_nodes))) \
                / (uintptr_t) sizeof(struct btf_node))
 
-int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, uint32_t tree_size);
+int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes, size_t tree_size);
 
 int32_t btf_set_data(struct btf_tree *tree, void * data, size_t datalen);
 

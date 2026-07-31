@@ -74,10 +74,10 @@ class BTFNode:
         return cls.nodes_d
     
     @classmethod
-    def index_of(cls, element) -> int:
+    def index_of(cls, element) -> str:
         if element is None:
-            return -1
-        return cls.nodes_d.get(element).index
+            return "BTF_NULL_NODE"
+        return str(cls.nodes_d.get(element).index)
 
     @classmethod
     def get_node(cls, element) -> Self:
