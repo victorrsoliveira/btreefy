@@ -17,7 +17,7 @@ BTreeFy is a lightweight Behavior Tree library designed for embedded systems, wi
 ## Architecture Overview
 - **LCRS Representation:** Trees use the Left-Child Right-Sibling pattern to minimize memory footprint.
 - **Code Generation:** Behavior trees modeled in Groot (.xml) are converted to C arrays using `scripts/btf_groot_parser.py`.
-- **Blackboard/Data:** Trees support a generic data pointer (`void *data`) for state sharing across nodes.
+- **State Data:** Trees support a generic data pointer (`void *data`) for state sharing across nodes.
 
 ## Project Structure
 - `include/btreefy/`: Public API and data structures.

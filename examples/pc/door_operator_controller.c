@@ -14,7 +14,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include "btreefy/btf_blackboard.h"
 #include "app_blackboard.h"
 
 static char *door_sensor_status_string[] = {[DOOR_IS_UNDEFINED] = "UNDEFINED",
@@ -27,7 +26,6 @@ static pthread_cond_t  door_cond     = PTHREAD_COND_INITIALIZER;
 static bool            timer_active  = false;
 static bool            stop_timer    = false;
 
-BTF_BLACKBOARD_DECLARE(app_blackboard, struct app_blackboard);
 
 static void *door_timer_thread_fn(void *arg);
 
@@ -47,17 +45,23 @@ int door_operator_ctrl_set_action(enum door_action action)
     enum btfdt_door_sensor_status  door_status;
     enum btfdt_motor_action_status motor_status;
 
-    BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, motor_status, motor_status);
+    pthread_mutex_lock(&app_blackboard_mutex);
+    motor_status = app_blackboard_ctx.motor_status;
+    pthread_mutex_unlock(&app_blackboard_mutex);
 
     if ((enum btfdt_motor_action_status) action != motor_status)
     {
-        BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, motor_status, action);
+        pthread_mutex_lock(&app_blackboard_mutex);
+        app_blackboard_ctx.motor_status = action;
+        pthread_mutex_unlock(&app_blackboard_mutex);
 
         pthread_mutex_lock(&door_mutex);
         if ((action == OPEN_DOOR) || (action == CLOSE_DOOR))
         {
             door_status = BTFDT_DOOR_IS_UNDEFINED;
-            BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, door_status, door_status);
+            pthread_mutex_lock(&app_blackboard_mutex);
+            app_blackboard_ctx.door_status = door_status;
+            pthread_mutex_unlock(&app_blackboard_mutex);
             timer_active = true;
             pthread_cond_signal(&door_cond);
         }
@@ -96,19 +100,22 @@ static void *door_timer_thread_fn(void *arg)
         if (timer_active)
         {
             printf("Door sensor timer callback\n");
-            BTF_BLACKBOARD_RETRIEVE_DATA(app_blackboard, motor_status,
-                                         motor_status);
+            pthread_mutex_lock(&app_blackboard_mutex);
+            motor_status = app_blackboard_ctx.motor_status;
+            pthread_mutex_unlock(&app_blackboard_mutex);
             if (motor_status == BTFDT_MOTOR_OPEN_DOOR)
             {
                 door_status = BTFDT_DOOR_IS_OPEN;
-                BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, door_status,
-                                           door_status);
+                pthread_mutex_lock(&app_blackboard_mutex);
+                app_blackboard_ctx.door_status = door_status;
+                pthread_mutex_unlock(&app_blackboard_mutex);
             }
             else if (motor_status == BTFDT_MOTOR_CLOSE_DOOR)
             {
                 door_status = BTFDT_DOOR_IS_CLOSED;
-                BTF_BLACKBOARD_UPDATE_DATA(app_blackboard, door_status,
-                                           door_status);
+                pthread_mutex_lock(&app_blackboard_mutex);
+                app_blackboard_ctx.door_status = door_status;
+                pthread_mutex_unlock(&app_blackboard_mutex);
             }
             timer_active = false;
         }

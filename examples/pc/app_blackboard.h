@@ -11,6 +11,7 @@
 #define APP_BLACKBOARD_H
 
 #include <stdbool.h>
+#include <pthread.h>
 
 enum btfdt_door_sensor_status
 {
@@ -35,5 +36,8 @@ struct app_blackboard
     enum btfdt_door_sensor_status  door_status;
     enum btfdt_motor_action_status motor_status;
 };
+
+extern struct app_blackboard app_blackboard_ctx;
+extern pthread_mutex_t app_blackboard_mutex;
 
 #endif  // APP_BLACKBOARD_H

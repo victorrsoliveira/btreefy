@@ -1,5 +1,5 @@
 
-set(BTREEFY_SOURCES btreefy.c btreefy_policies.c btreefy_always_actions.c btf_blackboard.c)
+set(BTREEFY_SOURCES btreefy.c btreefy_policies.c btreefy_always_actions.c)
 
 if(ZEPHYR_BASE)
     zephyr_library_named(BTreeFy-Src)
