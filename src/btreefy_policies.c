@@ -17,7 +17,9 @@ enum btf_node_execution_result btf_sequence_policy_fn(
 {
     if (status == NULL)
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("Error on sequence policy execution: status is NULL\n");
+#endif
         return BTF_RETURN_EXECUTION_RESULT;
     }
 
@@ -27,7 +29,9 @@ enum btf_node_execution_result btf_sequence_policy_fn(
         && (tree->nodes[child_node->parent].status == BTF_RUNNING_STATUS)
         && (tree->nodes[tree->running_node_index].status == BTF_RUNNING_STATUS))
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("Must abort RUNNING action [%lu]\n", (unsigned long)tree->running_node_index);
+#endif
         tree->running_node_index = BTF_NULL_NODE;
     }
 
@@ -45,7 +49,9 @@ enum btf_node_execution_result btf_sequence_policy_fn(
     }
     else
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("SEQUENCE: WRONG STATUS\n");
+#endif
         // Default
     }
 
@@ -58,7 +64,9 @@ enum btf_node_execution_result btf_fallback_policy_fn(
 {
     if (status == NULL)
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("Error on fallback policy execution: status is NULL\n");
+#endif
         return BTF_RETURN_EXECUTION_RESULT;
     }
 
@@ -68,7 +76,9 @@ enum btf_node_execution_result btf_fallback_policy_fn(
         && (tree->nodes[child_node->parent].status == BTF_RUNNING_STATUS)
         && (tree->nodes[tree->running_node_index].status == BTF_RUNNING_STATUS))
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("Must abort RUNNING action [%lu]\n", (unsigned long)tree->running_node_index);
+#endif
         tree->running_node_index = BTF_NULL_NODE;
     }
 
@@ -86,7 +96,9 @@ enum btf_node_execution_result btf_fallback_policy_fn(
     }
     else
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("FALLBACK: WRONG STATUS\n");
+#endif
         // Default
     }
 
@@ -99,7 +111,9 @@ enum btf_node_execution_result btf_success_policy_fn(
 {
     if (status == NULL)
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("Error on success policy execution: status is NULL\n");
+#endif
         return BTF_RETURN_EXECUTION_RESULT;
     }
 
@@ -114,7 +128,9 @@ enum btf_node_execution_result btf_fail_policy_fn(struct btf_tree *tree,
 {
     if (status == NULL)
     {
+#if BTF_DEBUG_PRINTF_ENABLED
         printf("Error on success policy execution: status is NULL\n");
+#endif
         return BTF_RETURN_EXECUTION_RESULT;
     }
 
