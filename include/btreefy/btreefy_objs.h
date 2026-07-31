@@ -15,6 +15,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#ifdef CONFIG_BTREEFY_DEBUG_PRINTF
+#define BTF_DEBUG_PRINTF_ENABLED 1
+#else
+#define BTF_DEBUG_PRINTF_ENABLED 0
+#endif
+
 #if defined(CONFIG_BTREEFY_NODE_INDEX_16BIT)
 typedef uint16_t btf_node_index_t;
 #define BTF_NULL_NODE ((btf_node_index_t)0xFFFF)
@@ -82,7 +88,9 @@ struct btf_node
     btf_node_index_t  child;
     btf_node_index_t  sibling;
     void             *handler_fn;
+#if BTF_DEBUG_PRINTF_ENABLED
     char *name;
+#endif
 };
 
 extern char *btf_global_action_status_string[];

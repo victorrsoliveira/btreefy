@@ -29,7 +29,10 @@ BT_NODES_CARRAY_NODE_DECL_TEMPLATE = \
             .child    =  {child},
             .sibling = {sibling},
             .handler_fn = {handler_fn},
-            .name     = {name}}},
+#if BTF_DEBUG_PRINTF_ENABLED
+            .name     = {name}
+#endif
+    }},
 """
 BT_NODES_CARRAY_DECL_END = "};"
 BT_NODES_SIZE_DECL = f"size_t {BTF_NODES_CARRAY_NAME}_size = sizeof({BTF_NODES_CARRAY_NAME})/sizeof({BTF_NODES_CARRAY_NAME}[0]);"

@@ -36,7 +36,9 @@ int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes,
     tree->size               = tree_size;
     tree->running_node_index = BTF_NULL_NODE;
 
+#if BTF_DEBUG_PRINTF_ENABLED
     printf("BT initialized!\n");
+#endif
 
     return 0;
 }
@@ -101,8 +103,10 @@ int32_t btf_tick_tree(struct btf_tree *tree)
                     BTF_NODE_ARRAY_INDEX(tree->nodes, p_node);
                 // (((uintptr_t) p_node) - ((uintptr_t) tree->nodes))
                 // / (uintptr_t) sizeof(struct btf_node);
+#if BTF_DEBUG_PRINTF_ENABLED
                 printf("Store RUNNING node [%u]\n",
                        (uint32_t) tree->running_node_index);
+#endif
             }
         }
         else
