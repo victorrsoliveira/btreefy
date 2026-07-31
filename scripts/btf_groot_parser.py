@@ -28,8 +28,7 @@ BT_NODES_CARRAY_NODE_DECL_TEMPLATE = \
             .parent   = {parent},
             .child    =  {child},
             .sibling = {sibling},
-            .action   = {action},
-            .control  = {control},
+            .handler_fn = {handler_fn},
             .name     = {name}}},
 """
 BT_NODES_CARRAY_DECL_END = "};"
@@ -155,21 +154,20 @@ def main(args):
         nodes_f.write(BTF_NODES_DATA_FILE_INCLUDE)
         nodes_f.write(BT_NODES_CARRAY_DECL_START)
         for elem, node in bt_nodes.items():
-            action_fn_str = "NULL"
-            control_fn_str = "NULL"
+            handler_fn_str = "NULL"
             node_name = elem.attrib['name'] if 'name' in elem.attrib.keys() else elem.tag
             node_name = '"' + node_name + '"'
             if elem.tag in BTF_CTYPE_POLICY_FUNCTIONS_MAP.keys():
-                control_fn_str = BTF_CTYPE_POLICY_FUNCTIONS_MAP[elem.tag]
+                handler_fn_str = BTF_CTYPE_POLICY_FUNCTIONS_MAP[elem.tag]
             elif elem.tag in BTF_CTYPE_ALWAYS_ACTION_FUNCTIONS_MAP.keys():
-                action_fn_str = BTF_CTYPE_ALWAYS_ACTION_FUNCTIONS_MAP[elem.tag]
+                handler_fn_str = BTF_CTYPE_ALWAYS_ACTION_FUNCTIONS_MAP[elem.tag]
             elif elem.tag in ("Script", "ScriptCondition"):
-                action_fn_str = elem.attrib['code']
-                actions_fn_set.add(action_fn_str)
+                handler_fn_str = elem.attrib['code']
+                actions_fn_set.add(handler_fn_str)
             else:
                 # TODO: Check if some action must be done
                 pass
-            s = BT_NODES_CARRAY_NODE_DECL_TEMPLATE.format(index=node.index, parent=node.parent, child=node.child, sibling=node.sibling, action=action_fn_str, control=control_fn_str, name=node_name)
+            s = BT_NODES_CARRAY_NODE_DECL_TEMPLATE.format(index=node.index, parent=node.parent, child=node.child, sibling=node.sibling, handler_fn=handler_fn_str, name=node_name)
             print(s)
             nodes_f.write(s)
         nodes_f.write(BT_NODES_CARRAY_DECL_END)

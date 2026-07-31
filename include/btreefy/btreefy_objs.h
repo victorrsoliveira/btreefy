@@ -61,16 +61,18 @@ static inline void btf_tree_copy_data(struct btf_tree * tree, void * data, size_
     }
 }
 
+typedef enum btf_node_status (*btf_action_fn_t)(struct btf_tree *tree);
+typedef enum btf_node_execution_result (*btf_control_fn_t)(
+    struct btf_tree *tree, struct btf_node *child_node,
+    enum btf_node_status *status);
+
 struct btf_node
 {
     enum btf_node_status status;
     uint32_t          parent;
     uint32_t          child;
     uint32_t          sibling;
-    enum btf_node_status (*action)(struct btf_tree *tree);
-    enum btf_node_execution_result (*control)(struct btf_tree       *tree,
-                                           struct btf_node   *child_node,
-                                           enum btf_node_status *status);
+    void             *handler_fn;
     char *name;
 };
 
