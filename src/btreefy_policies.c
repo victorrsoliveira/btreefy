@@ -27,7 +27,7 @@ enum btf_node_execution_result btf_sequence_policy_fn(
         && (tree->nodes[child_node->parent].status == BTF_RUNNING_STATUS)
         && (tree->nodes[tree->running_node_index].status == BTF_RUNNING_STATUS))
     {
-        printf("Must abort RUNNING action [%lu]\n", tree->running_node_index);
+        printf("Must abort RUNNING action [%lu]\n", (unsigned long)tree->running_node_index);
         tree->running_node_index = BTF_NULL_NODE;
     }
 
@@ -68,7 +68,7 @@ enum btf_node_execution_result btf_fallback_policy_fn(
         && (tree->nodes[child_node->parent].status == BTF_RUNNING_STATUS)
         && (tree->nodes[tree->running_node_index].status == BTF_RUNNING_STATUS))
     {
-        printf("Must abort RUNNING action [%lu]\n", tree->running_node_index);
+        printf("Must abort RUNNING action [%lu]\n", (unsigned long)tree->running_node_index);
         tree->running_node_index = BTF_NULL_NODE;
     }
 

@@ -24,7 +24,7 @@ char *btf_global_control_status_string[] = {
     [BTF_PAUSE_EXECUTION_RESULT]    = "PAUSE"};
 
 int32_t btf_init(struct btf_tree *tree, struct btf_node *nodes,
-                 uint32_t tree_size)
+                 size_t tree_size)
 
 {
     if ((tree == NULL) || (nodes == NULL) || (tree_size == 0))
@@ -56,7 +56,7 @@ int32_t btf_set_data(struct btf_tree *tree, void *data, size_t datalen)
 
 int32_t btf_tick_tree(struct btf_tree *tree)
 {
-    uint32_t                       node_index = 0;
+    btf_node_index_t               node_index = 0;
     struct btf_node               *p_node     = NULL;
     struct btf_node               *p_parent   = NULL;
     enum btf_node_status           status     = BTF_UNDEF_STATUS;
