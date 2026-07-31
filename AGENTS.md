@@ -11,7 +11,7 @@ BTreeFy is a lightweight Behavior Tree library designed for embedded systems, wi
 
 ## Guiding Principles
 - **Embedded First:** Avoid dynamic memory allocation (`malloc`/`free`). All tree structures and data must be statically allocated.
-- **Portability:** Core logic is platform-agnostic; hardware/RTOS interactions are isolated in "runners".
+- **Portability:** Core logic is platform-agnostic.
 - **Naming Convention:** All public symbols, functions, and types must be prefixed with `btf_`.
 
 ## Architecture Overview
@@ -22,7 +22,6 @@ BTreeFy is a lightweight Behavior Tree library designed for embedded systems, wi
 ## Project Structure
 - `include/btreefy/`: Public API and data structures.
 - `src/`: Core implementation.
-- `src/runners/`: Platform-specific tree runners (POSIX, Zephyr).
 - `scripts/`: Python scripts for parsing and code generation.
 - `tests/`: Unit tests using the Unity framework.
 - `models/`: Behavior tree source files (.xml, .btproj).

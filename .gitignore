@@ -33,3 +33,6 @@ launch.json
 
 # Zephyr files
 .west
+
+# Gemini Agent artifacts
+.gemini/
