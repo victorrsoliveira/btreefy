@@ -12,7 +12,6 @@
 
 #include "app_blackboard.h"
 #include "btreefy/btf_blackboard.h"
-#include "btreefy/btf_tree_runner.h"
 #include "btreefy/btreefy.h"
 #include "door_operator_controller.h"
 
@@ -282,12 +281,6 @@ int main(void)
         return -1;
     }
 
-    if (btf_runner_init(&tree))
-    {
-        printf("Failed to init runner\n");
-        return -1;
-    }
-
     // Create scenario thread to drive blackboard updates
     if (pthread_create(&scenario_thread, NULL, scenario_runner_thread, NULL) != 0)
     {
@@ -295,10 +288,11 @@ int main(void)
         return -1;
     }
 
-    // Main loop: runner thread handles all ticking via blackboard events
+    // Main loop: tick the tree manually
     while (1)
     {
-        usleep(SLEEP_TIME_MS * 1000);
+        btf_tick_tree(&tree);
+        usleep(100 * 1000); // 100ms
     }
 
     return 0;

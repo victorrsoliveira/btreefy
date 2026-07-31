@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "btreefy/btf_tree_runner.h"
 #include "btreefy/btreefy_objs.h"
 
 int32_t btf_blackboard_retrieve_data(struct btf_blackboard *blackboard,
@@ -32,8 +31,6 @@ int32_t btf_blackboard_update_data(struct btf_blackboard *blackboard,
     assert(data != NULL);
 
     memcpy((uint8_t *) blackboard->data + offset, data, size);
-
-    btf_runner_notify_event(BTF_RUNNER_BLACKBOARD_EVT);
 
     return 0;
 }
