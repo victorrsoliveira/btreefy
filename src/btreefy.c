@@ -58,7 +58,6 @@ int32_t btf_set_data(struct btf_tree *tree, void *data, size_t datalen)
 
 int32_t btf_tick_tree(struct btf_tree *tree)
 {
-    btf_node_index_t               node_index = 0;
     struct btf_node               *p_node     = NULL;
     struct btf_node               *p_parent   = NULL;
     enum btf_node_status           status     = BTF_UNDEF_STATUS;
@@ -99,7 +98,7 @@ int32_t btf_tick_tree(struct btf_tree *tree)
             if (BTF_RUNNING_STATUS == status)
             {
                 // Store the running node index
-                tree->running_node_index =
+                tree->running_node_index = (btf_node_index_t)
                     BTF_NODE_ARRAY_INDEX(tree->nodes, p_node);
                 // (((uintptr_t) p_node) - ((uintptr_t) tree->nodes))
                 // / (uintptr_t) sizeof(struct btf_node);

@@ -13,10 +13,12 @@
 
 enum btf_node_status btf_always_success_action(struct btf_tree *tree)
 {
+    (void) tree;
     return BTF_SUCCESS_STATUS;
 }
 
 enum btf_node_status btf_always_failure_action(struct btf_tree *tree)
 {
+    (void) tree;
     return BTF_FAILURE_STATUS;
 }
